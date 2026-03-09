@@ -197,7 +197,7 @@ class Core():
         # if the time-series is not present
         if not subject.is_present("BOLD", input_file):
             if file_type == ".nii" or file_type == ".nii.gz":
-                data = v1.get_data()
+                data = v1.get_fdata()
                 nobs = data.shape[3]
                 data1 = np.reshape(data, (-1, nobs), order='F').T
             elif file_type == ".gii" or file_type == ".gii.gz":

@@ -30,7 +30,7 @@ def compute_hrf(bold_sig, para, temporal_mask, p_jobs, bf = None):
         shutil.rmtree(folder)
     except:
         print("Failed to delete: " + folder)
-    return np.array(beta_hrf).T, np.array(event_bold)
+    return np.array(beta_hrf).T, np.array(event_bold, dtype=object)
 
 def estimate_hrf(bold_sig, i, para, N, bf = None):
     """

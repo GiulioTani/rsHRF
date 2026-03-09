@@ -49,13 +49,13 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
                 raise ValueError ('Inconsistency in input-mask dimensions' + '\n\tinput_file == ' + name + file_type + '\n\tmask_file == ' + mask_name + file_type)
             else:
                 if file_type == ".nii" or file_type == ".nii.gz" :
-                    data   = v1.get_data()      
+                    data   = v1.get_fdata()      
                 else:
                     data   = v1.agg_data()
         else:
             print('No atlas provided! Generating mask file...')
             if file_type == ".nii" or file_type == ".nii.gz" :
-                data   = v1.get_data() 
+                data   = v1.get_fdata() 
                 brain  = np.nanvar(data.reshape(-1, data.shape[3]), -1, ddof=0)
             else:
                 data   = v1.agg_data()

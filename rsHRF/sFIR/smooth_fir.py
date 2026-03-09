@@ -11,10 +11,11 @@ def wgr_regress(y, X):
     if R.ndim == 0:
         p = 0
     elif R.ndim == 1:
-        p = int(abs(R[0]) > 0)
+        p = int(np.abs(R[0]).item() > 0) # .item() kullanarak skalere çevirdik
     else:
         if np.amin(R.shape) == 1:
-            p = int(abs(R[0]) > 0)
+            # R[0][0] veya R.flat[0] kullanarak güvenli erişim sağlıyoruz
+            p = int(np.abs(R.flat[0]) > 0)    
         else:
             p = np.sum(np.abs(np.diagonal(R)) > abs(max(n, ncolX)*np.spacing(R[0][0])))
     if p < ncolX:
@@ -94,8 +95,15 @@ def wgr_glsco(X, Y, sMRI = [], AR_lag=0, max_iter=20):
 def Fit_sFIR2(output, length, TR, input, T, flag_sfir, AR_lag):
     NN = int(np.floor(length/TR))
     _input = np.expand_dims(input[0], axis=0)
-    X = linalg.toeplitz(input, np.concatenate((_input, np.zeros((1, NN-1))), axis = 1))
-    X = np.concatenate((X, np.ones((input.shape))), axis = 1)
+    X = linalg.toeplitz(input.flatten(), np.concatenate((_input.flatten(), np.zeros(NN-1))))
+    if X.ndim < 2:
+        X = np.expand_dims(X, axis=1)
+    # X kaç boyutluysa np.ones'ı da ona zorlayalım
+    ones_to_add = np.ones((X.shape[0], 1))
+    while ones_to_add.ndim < X.ndim:
+        ones_to_add = np.expand_dims(ones_to_add, axis=-1)
+
+    X = np.concatenate((X, ones_to_add), axis=1)
     if flag_sfir:
         fwhm = 7 #fwhm=7 seconds smoothing - ref. Goutte
         nh = NN-1
