@@ -11,10 +11,10 @@ def wgr_regress(y, X):
     if R.ndim == 0:
         p = 0
     elif R.ndim == 1:
-        p = int(np.abs(R[0]).item() > 0) # .item() kullanarak skalere çevirdik
+        p = int(np.abs(R[0]).item() > 0) # Converting to scalar using .item() for compatibility and safe access
     else:
         if np.amin(R.shape) == 1:
-            # R[0][0] veya R.flat[0] kullanarak güvenli erişim sağlıyoruz
+            # Accessing scalar safely via R.flat[0] for robustness
             p = int(np.abs(R.flat[0]) > 0)    
         else:
             p = np.sum(np.abs(np.diagonal(R)) > abs(max(n, ncolX)*np.spacing(R[0][0])))
@@ -98,7 +98,7 @@ def Fit_sFIR2(output, length, TR, input, T, flag_sfir, AR_lag):
     X = linalg.toeplitz(input.flatten(), np.concatenate((_input.flatten(), np.zeros(NN-1))))
     if X.ndim < 2:
         X = np.expand_dims(X, axis=1)
-    # X kaç boyutluysa np.ones'ı da ona zorlayalım
+    # Force np.ones to match the dimensions of X
     ones_to_add = np.ones((X.shape[0], 1))
     while ones_to_add.ndim < X.ndim:
         ones_to_add = np.expand_dims(ones_to_add, axis=-1)
