@@ -1,45 +1,36 @@
-FROM python:3.6
+# Use the official Python 3.11 image to match the development environment
+FROM python:3.11
 
+# Disable interactive prompts during the build process
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install system-level dependencies required for C-extensions and BIDS processing
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-                    curl \
-                    bzip2 \
-                    ca-certificates \
-                    xvfb \
-                    cython3 \
                     build-essential \
-                    autoconf \
                     libtool \
+                    autoconf \
                     pkg-config \
-                    dc \
-                    bc \
-                    libgsl-dev && \
-    apt-get remove -y curl && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+                    libgsl-dev \
+                    ca-certificates \
+                    xvfb && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN python -m pip install --no-cache-dir --upgrade pip setuptools && \
-    python -m pip install --no-cache-dir setuptools_scm && \
-    python -m pip install --no-cache-dir wheel && \
-    python -m pip install --no-cache-dir cython && \
-    python -m pip install --no-cache-dir numpy && \
-    python -m pip install --no-cache-dir nibabel && \
-    python -m pip install --no-cache-dir matplotlib && \
-    python -m pip install --no-cache-dir scipy && \
-    python -m pip install --no-cache-dir pybids==0.11.1 && \
-    python -m pip install --no-cache-dir pandas && \
-    python -m pip install --no-cache-dir patsy && \
-    python -m pip install --no-cache-dir mpld3 && \
-    python -m pip install --no-cache-dir duecredit && \
-    python -m pip install --no-cache-dir joblib && \
-    python -m pip install --no-cache-dir PyWavelets \
-    && rm -rf ~/.cache/pip
-
+# Set the working directory for the application
 WORKDIR /rsHRF
+
+# Copy requirements first to take advantage of Docker's layer caching
+# This prevents re-installing all libraries if only source code changes
+COPY requirements.txt /rsHRF/
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy the source code into the container
 COPY . /rsHRF/
 
-RUN python -m pip install --no-cache-dir -e .
+# Install the rsHRF package in editable mode
+RUN pip install --no-cache-dir -e .
 
+# Set the default command to run the rsHRF CLI
 ENTRYPOINT ["rsHRF"]

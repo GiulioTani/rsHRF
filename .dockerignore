@@ -1,3 +1,4 @@
+# --- Existing entries ---
 .git
 .gitignore
 node_modules
@@ -14,3 +15,16 @@ MANIFEST.in
 **/*.pyc
 **/*.pyo
 *.egg-info/*
+
+# --- Added to fix the 1GB context issue ---
+# Ignore large fMRI data files and results
+test_data/
+test_results/
+*.nii
+*.nii.gz
+*.mat
+
+# Ignore local virtual environments
+venv/
+.pytest_cache/
+__pycache__/
