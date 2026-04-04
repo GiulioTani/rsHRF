@@ -86,6 +86,7 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
     data_deconv  = np.zeros(bold_sig.shape)
     event_number = np.zeros((1, bold_sig.shape[1]))
     print('Retrieving HRF ...')
+    bf = None # Initialize bf to avoid UnboundLocalError
     #Estimate HRF for the fourier / hanning / gamma / cannon basis functions
     if not (para['estimation'] == 'sFIR' or para['estimation'] == 'FIR'):
         bf = basis_functions.basis_functions.get_basis_function(bold_sig.shape, para)
