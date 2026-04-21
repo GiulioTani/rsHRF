@@ -4,8 +4,10 @@ import sys
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 
+# Using .strip() ensures no hidden newline or carriage return characters (\r) 
+# remain in the version string, which is a common cause for 400 errors.
 with open("rsHRF/VERSION", "r") as fh:
-    VERSION = fh.read().strip('\n')
+    VERSION = fh.read().strip()
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -35,17 +37,31 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Madhur Tandon, Amogh Johri",
-    author_email="madhurtandon23@gmail.com, amogh.johri@iiitb.org",
+    # Using a single primary email often helps avoid validation parsing issues on PyPI
+    author_email="madhurtandon23@gmail.com",
     url="https://github.com/BIDS-Apps/rsHRF",
-    classifiers=(
+    # Changed from tuple () to list [] to comply with standard setuptools expectations
+    classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-    ),
+    ],
     include_package_data=True,
     zip_safe=False,
     python_requires=">=3.6",
-    install_requires=["numpy", "nibabel", "matplotlib", "scipy", "pybids==0.11.1", "pandas", "patsy", "mpld3", "duecredit", "joblib", "PyWavelets"],
+    install_requires=[
+        "numpy", 
+        "nibabel", 
+        "matplotlib", 
+        "scipy", 
+        "pybids==0.11.1", 
+        "pandas", 
+        "patsy", 
+        "mpld3", 
+        "duecredit", 
+        "joblib", 
+        "PyWavelets"
+    ],
     cmdclass={
         'verify': VerifyVersionCommand,
     },
