@@ -9,7 +9,7 @@ from bids.layout  import BIDSLayout, parse_file_entities
 from scipy        import stats, signal
 from scipy.sparse import lil_matrix
 from rsHRF        import spm_dep, processing, parameters, basis_functions, utils, iterative_wiener_deconv
-
+from joblib import Parallel, delayed
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -74,8 +74,10 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
             data1 = np.expand_dims(data1, axis=1)
         nobs = data1.shape[0]
         bold_sig = stats.zscore(data1, ddof=1)
+        
     if len(temporal_mask) > 0 and len(temporal_mask) != nobs:
-            raise ValueError ('Inconsistency in temporal_mask dimensions.\n' + 'Size of mask: ' + str(len(temporal_mask)) + '\n' + 'Size of time-series: ' + str(nobs))
+        raise ValueError ('Inconsistency in temporal_mask dimensions.\n' + 'Size of mask: ' + str(len(temporal_mask)) + '\n' + 'Size of time-series: ' + str(nobs))
+        
     bold_sig = np.nan_to_num(bold_sig)
     bold_sig_deconv = processing. \
                       rest_filter. \
@@ -85,54 +87,67 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
                rest_IdealFilter(bold_sig, para['TR'], para['passband'])   
     data_deconv  = np.zeros(bold_sig.shape)
     event_number = np.zeros((1, bold_sig.shape[1]))
+    
     print('Retrieving HRF ...')
     bf = None # Initialize bf to avoid UnboundLocalError
-    #Estimate HRF for the fourier / hanning / gamma / cannon basis functions
+    # Estimate HRF for the fourier / hanning / gamma / cannon basis functions
     if not (para['estimation'] == 'sFIR' or para['estimation'] == 'FIR'):
         bf = basis_functions.basis_functions.get_basis_function(bold_sig.shape, para)
         beta_hrf, event_bold = utils.hrf_estimation.compute_hrf(bold_sig, para, temporal_mask, p_jobs, bf=bf)
         hrfa = np.dot(bf, beta_hrf[np.arange(0, bf.shape[1]), :])
-    #Estimate HRF for FIR and sFIR
+    # Estimate HRF for FIR and sFIR
     else:
         para['T'] = 1        
         beta_hrf, event_bold = utils.hrf_estimation.compute_hrf(bold_sig, para, temporal_mask, p_jobs)
         hrfa = beta_hrf[:-1,:]
+        
     nvar = hrfa.shape[1]
     PARA = np.zeros((3, nvar))
     for voxel_id in range(nvar):
         hrf1 = hrfa[:, voxel_id]
         PARA[:, voxel_id] = \
             parameters.wgr_get_parameters(hrf1, para['TR'] / para['T'])
+            
     print('Done')
     print('Deconvolving HRF ...')
+    
     if para['T'] > 1:
         hrfa_TR = signal.resample_poly(hrfa, 1, para['T'])
     else:
         hrfa_TR = hrfa
-    for voxel_id in range(nvar):
-        hrf = hrfa_TR[:, voxel_id]
-        if not wiener:
-            H = np.fft.fft(
-                np.append(hrf,
-                          np.zeros((nobs - max(hrf.shape), 1))), axis=0)
-            M = np.fft.fft(bold_sig_deconv[:, voxel_id])
-            data_deconv[:, voxel_id] = \
-                np.fft.ifft(H.conj() * M / (H * H.conj() + .1*np.mean((H * H.conj()))))
+
+    # Helper function that isolates the operation of each voxel.
+    def process_voxel_deconv(voxel_id, hrf_array, sig_deconv, nobs_val, p_wiener, p_para):
+        hrf = hrf_array[:, voxel_id]
+        if not p_wiener:
+            H = np.fft.fft(np.append(hrf, np.zeros((nobs_val - max(hrf.shape), 1))), axis=0)
+            M = np.fft.fft(sig_deconv[:, voxel_id])
+            return np.fft.ifft(H.conj() * M / (H * H.conj() + .1 * np.mean((H * H.conj()))))
         else:
-            # Use new API with MATLAB v2.5 features (auto-recommendations based on TR and Mode)
-            # Default to 'rest' mode for resting-state fMRI (can be overridden in para dict)
-            deconv_mode = para.get('deconv_mode', 'rest')
-            data_deconv[:, voxel_id] = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-                bold_sig_deconv[:, voxel_id],
+            deconv_mode = p_para.get('deconv_mode', 'rest')
+            return iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
+                sig_deconv[:, voxel_id],
                 hrf,
-                TR=para['TR'],
-                MaxIter=para.get('deconv_MaxIter', 50),
-                Tol=para.get('deconv_Tol', 1e-4),
+                TR=p_para['TR'],
+                MaxIter=p_para.get('deconv_MaxIter', 50),
+                Tol=p_para.get('deconv_Tol', 1e-4),
                 Mode=deconv_mode
             )
-        event_number[:, voxel_id] = np.amax(event_bold[voxel_id].shape)
+
+    # Distribute voxels to all available kernels (p_jobs) using Joblib
+    results = Parallel(n_jobs=p_jobs)(
+        delayed(process_voxel_deconv)(v_id, hrfa_TR, bold_sig_deconv, nobs, wiener, para)
+        for v_id in range(nvar)
+    )
+
+    # Write the parallel returned results to the main data_deconv matrix.
+    for v_id in range(nvar):
+        data_deconv[:, v_id] = results[v_id]
+        event_number[:, v_id] = np.amax(event_bold[v_id].shape)
+        
     print('Done')
     print('Saving Output ...')
+    
     # setting the output-path
     if mode == 'bids' or mode == 'bids w/ atlas':
         layout_output = BIDSLayout(output_dir)
@@ -140,17 +155,21 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
         sub_save_dir = layout_output.build_path(entities).rsplit('/',1)[0]            
     else:
         sub_save_dir = output_dir
+        
     if not os.path.isdir(sub_save_dir):
         os.makedirs(sub_save_dir, exist_ok=True)
+        
     dic = {'para': para, 'hrfa': hrfa, 'event_bold': event_bold, 'PARA': PARA}
     ext = '_hrf.mat'
     if mode == "time-series":
         dic["event_number"] = event_number
         dic["data_deconv"]  = data_deconv
         ext = '_hrf_deconv.mat'
+        
     name = name.rsplit('_bold', 1)[0]   
     sio.savemat(os.path.join(sub_save_dir, name + ext), dic)
     HRF_para_str = ['height', 'T2P', 'FWHM']
+    
     if mode != "time-series":
         mask_data = np.zeros(mask_shape).flatten(order='F')
         for i in range(3):
@@ -160,10 +179,12 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
             mask_data = mask_data.reshape(mask_shape, order='F')
             spm_dep.spm.spm_write_vol(v1, mask_data, fname, file_type)
             mask_data = mask_data.flatten(order='F')
+            
         fname = os.path.join(sub_save_dir, name + '_eventnumber')
         mask_data[voxel_ind] = event_number
         mask_data = mask_data.reshape(mask_shape, order='F')
         spm_dep.spm.spm_write_vol(v1, mask_data, fname, file_type)
+        
         mask_data = np.zeros(data.shape)
         dat3 = np.zeros(data.shape[:-1]).flatten(order='F')
         for i in range(nobs):
@@ -176,17 +197,20 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
                 mask_data[:, i] = dat3
             dat3 = dat3.flatten(order='F')
         spm_dep.spm.spm_write_vol(v1, mask_data, fname, file_type)
+        
     pos = 0
     while pos < hrfa_TR.shape[1]:
         if np.any(hrfa_TR[:,pos]):
             break 
         pos += 1
+        
     event_plot = lil_matrix((1, nobs))
     if event_bold.size:
         event_plot[:, event_bold[pos]] = 1
     else:
         print("No Events Detected!")
         return 0
+        
     event_plot = np.ravel(event_plot.toarray())
     plt.figure()
     plt.plot(para['TR'] * np.arange(1, np.amax(hrfa_TR[:, pos].shape) + 1),
@@ -208,5 +232,6 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
     plt.legend(['BOLD', 'Deconvolved BOLD', 'Events'], loc='best')
     plt.xlabel('time (s)')
     plt.savefig(os.path.join(sub_save_dir, name + '_deconvolution_plot.png'))   
+    
     print('Done')
     return 0
