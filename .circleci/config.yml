@@ -18,7 +18,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip3 install .
+            pip3 install . 
             mkdir ${HOME}/scratch 
             mkdir ${HOME}/scratch/downloads
             wget -c -P ${HOME}/scratch/downloads/ "https://osf.io/xv72t//download"
@@ -52,8 +52,8 @@ jobs:
           name: init .pypirc
           command: |
             echo -e "[pypi]" >> ~/.pypirc
-            echo -e "username = amogh" >> ~/.pypirc
-            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+            echo -e "username = __token__" >> ~/.pypirc
+            echo -e "password = $PYPI_TOKEN" >> ~/.pypirc
       - run:
           name: create packages
           command: |
