@@ -54,7 +54,7 @@ You can run rsHRF as a containerized BIDS App using Docker. This avoids the need
 
 ### 1. Pull the latest image:
 ```bash
-docker pull bids/rshrf:latest
+docker pull bids/rshrf:unstable 
 ```
 ### 2. Run the analysis:
 
@@ -64,7 +64,7 @@ To run the analysis on a BIDS-formatted dataset, use the following command struc
 docker run -ti --rm \
   -v /path/to/your/bids_dataset:/data:ro \
   -v /path/to/your/output_dir:/out \
-  bids/rshrf:latest \
+  bids/rshrf:unstable \
   --bids_dir /data \
   --output_dir /out \
   --analysis_level participant \
