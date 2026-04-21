@@ -54,7 +54,7 @@ You can run rsHRF as a containerized BIDS App using Docker. This avoids the need
 
 ### 1. Pull the latest image:
 ```bash
-docker pull bids/rshrf:unstable 
+docker pull bids/rshrf:unstable
 ```
 ### 2. Run the analysis:
 
