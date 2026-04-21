@@ -18,7 +18,7 @@ class VerifyVersionCommand(install):
             sys.exit(info)    
     
 setup(
-    name="rsHRF",
+    name="rshrf",
     packages=find_packages(),
     entry_points={"console_scripts": ['rsHRF = rsHRF.CLI:main']},
     version=VERSION,
