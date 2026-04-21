@@ -1,17 +1,14 @@
-Resting state HRF estimation and deconvolution.
-========
+# Resting state HRF estimation and deconvolution
+
 [![PyPI version](https://badge.fury.io/py/rsHRF.png)](https://badge.fury.io/py/rsHRF)
 
 Please refer to https://github.com/compneuro-da/rsHRF for MATLAB version
 
 ![BOLD HRF](https://github.com/guorongwu/rsHRF/raw/master/docs/BOLD_HRF.png)
 
+## The basic idea
 
-The basic idea 
--------------
-
-This toolbox is aimed to retrieve the onsets of pseudo-events triggering an hemodynamic response from resting state fMRI BOLD voxel-wise signal.
-It is based on point process theory, and fits a model to retrieve the optimal lag between the events and the HRF onset, as well as the HRF shape, using a choice of basis functions (the canonical shape with two derivatives, (smoothed) Finite Impulse Response, mixture of gammas).
+This toolbox is aimed to retrieve the onsets of pseudo-events triggering an hemodynamic response from resting state fMRI BOLD voxel-wise signal. It is based on point process theory, and fits a model to retrieve the optimal lag between the events and the HRF onset, as well as the HRF shape, using a choice of basis functions (the canonical shape with two derivatives, (smoothed) Finite Impulse Response, mixture of gammas).
 
 ![BOLD HRF](https://users.ugent.be/~dmarinaz/example_hrf.png)
 
@@ -19,13 +16,12 @@ Once that the HRF has been retrieved for each voxel, it can be deconvolved from 
 
 ![HRF map](https://users.ugent.be/~dmarinaz/FIR_Height_full_layout.png)
 
-How to use the toolbox 
--------------
+## How to use the toolbox
 
 The input is voxelwise BOLD signal, already preprocessed according to your favorite recipe. Important thing are:
 
-* bandpass filter in the 0.01-0.08 Hz interval (or something like that)
-* z-score the voxel BOLD time series
+- bandpass filter in the 0.01-0.08 Hz interval (or something like that)
+- z-score the voxel BOLD time series
 
 To be on the safe side, these steps are performed again in the code.
 
@@ -35,23 +31,49 @@ It is possible to use a temporal mask to exclude some time points (for example a
 
 The demos allow you to run the analyses on several formats of input data.
 
-Python Package and BIDS-app 
--------------
+## Python Package and BIDS-app
+
 A BIDS-App has been made for easy and reproducible analysis. Its documentation can be accessed at:
 
 https://bids-apps.neuroimaging.io/rsHRF/
 
-Collaborators 
--------------
-* Guorong Wu
-* Nigel Colenbier
-* Sofie Van Den Bossche
-* Daniele Marinazzo
+## Collaborators
 
-* Madhur Tandon (Python - BIDS)
-* Asier Erramuzpe (Python - BIDS)
-* Amogh Johri   (Python - BIDS)
+- Guorong Wu
+- Nigel Colenbier
+- Sofie Van Den Bossche
+- Daniele Marinazzo
 
+- Madhur Tandon (Python - BIDS)
+- Asier Erramuzpe (Python - BIDS)
+- Amogh Johri   (Python - BIDS)
+
+## Docker Usage
+
+You can run rsHRF as a containerized BIDS App using Docker. This avoids the need to install Python dependencies locally and ensures reproducibility.
+
+### 1. Pull the latest image:
+```bash
+docker pull bids/rshrf:latest
+```
+### 2. Run the analysis:
+
+To run the analysis on a BIDS-formatted dataset, use the following command structure:
+
+```bash
+docker run -ti --rm \
+  -v /path/to/your/bids_dataset:/data:ro \
+  -v /path/to/your/output_dir:/out \
+  bids/rshrf:latest \
+  --bids_dir /data \
+  --output_dir /out \
+  --analysis_level participant \
+  --participant_label 01 \
+  --brainmask \
+  --estimation canon2dd \
+  --wiener
+
+```
 
 **References**
 --------
