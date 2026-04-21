@@ -1,5 +1,3 @@
-
-
 Resting state HRF estimation and deconvolution.
 ========
 [![PyPI version](https://badge.fury.io/py/rsHRF.png)](https://badge.fury.io/py/rsHRF)
@@ -15,11 +13,11 @@ The basic idea
 This toolbox is aimed to retrieve the onsets of pseudo-events triggering an hemodynamic response from resting state fMRI BOLD voxel-wise signal.
 It is based on point process theory, and fits a model to retrieve the optimal lag between the events and the HRF onset, as well as the HRF shape, using a choice of basis functions (the canonical shape with two derivatives, (smoothed) Finite Impulse Response, mixture of gammas).
 
-![BOLD HRF](http://users.ugent.be/~dmarinaz/example_hrf.png)
+![BOLD HRF](https://users.ugent.be/~dmarinaz/example_hrf.png)
 
 Once that the HRF has been retrieved for each voxel, it can be deconvolved from the time series (for example to improve lag-based connectivity estimates), or one can map the shape parameters everywhere in the brain (including white matter), and use the shape as a pathophysiological indicator.
 
-![HRF map](http://users.ugent.be/~dmarinaz/FIR_Height_full_layout.png)
+![HRF map](https://users.ugent.be/~dmarinaz/FIR_Height_full_layout.png)
 
 How to use the toolbox 
 -------------
@@ -41,7 +39,7 @@ Python Package and BIDS-app
 -------------
 A BIDS-App has been made for easy and reproducible analysis. Its documentation can be accessed at:
 
-http://bids-apps.neuroimaging.io/rsHRF/
+https://bids-apps.neuroimaging.io/rsHRF/
 
 Collaborators 
 -------------
