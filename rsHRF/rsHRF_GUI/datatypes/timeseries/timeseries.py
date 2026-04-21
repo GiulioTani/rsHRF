@@ -4,7 +4,7 @@ from copy import deepcopy
 from ...datatypes.misc.parameters import Parameters
 
 class TimeSeries():
-    """ 
+    """
     Deals with all the time-series artifacts that appear during the processing.
 
     These are the various time-series that are dealt with:
@@ -25,38 +25,38 @@ class TimeSeries():
         self.subject_index  = subject_index
         self.timeseries     = deepcopy(ts)
         self.shape          = ts.shape
-        self.parameters     = deepcopy(para) 
-    
+        self.parameters     = deepcopy(para)
+
     # setters
     def set_ts(self, ts):
-        self.timeseries     = deepcopy(ts) 
+        self.timeseries     = deepcopy(ts)
         self.shape          = self.timeseries.shape
-    
+
     def set_parameters(self,para):
-        self.parameters     = deepcopy(para) 
-    
+        self.parameters     = deepcopy(para)
+
     def set_label(self,label):
-        self.label          = label 
-    
+        self.label          = label
+
     def set_subject_index(self,subject_index):
         self.subject_index  = subject_index
-    
+
     # getters
     def get_ts(self):
         return self.timeseries
-    
+
     def get_subject_index(self):
         return self.subject_index
-    
+
     def get_label(self):
-        return self.label 
-    
+        return self.label
+
     def get_parameters(self):
         return self.parameters
-    
+
     def get_shape(self):
-        return self.shape 
-    
+        return self.shape
+
     # misc.
     def get_info(self):
         """ Returns the information about the time-series in the form of a dictionary """

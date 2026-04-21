@@ -1,5 +1,5 @@
-from . import core 
-from . import misc 
+from . import core
+from . import misc
 from . import datatypes
 from . import gui_windows
 

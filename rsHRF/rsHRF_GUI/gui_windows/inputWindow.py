@@ -20,10 +20,10 @@ class InputWindow():
         # other class vairables
         # 1 corresponds to BIDS input
         self.inputFormatVar = IntVar()
-        self.inputFormatVar.set(0) 
+        self.inputFormatVar.set(0)
         # 1 corresponds to mask file being present in the BIDS directory
         self.maskFormatVar = IntVar()
-        self.maskFormatVar.set(0) 
+        self.maskFormatVar.set(0)
         # selecting the estimation rule
         self.estimationOption = StringVar()
         self.estimationOption.set('canon2dd')
@@ -38,9 +38,9 @@ class InputWindow():
                 try:
                     self.file_type = self.input_file.split(os.extsep,1)[-1]
                     self.file_type = '.' + self.file_type
-                except: 
-                    self.file_type = ()             
-            try: 
+                except:
+                    self.file_type = ()
+            try:
                 inputFileLabel.configure(text=self.input_file.split('/')[-1])
             except:
                 inputFileLabel.configure(text="")

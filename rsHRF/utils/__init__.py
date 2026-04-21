@@ -1,2 +1,2 @@
 from . import hrf_estimation
-from . import bids 
+from . import bids

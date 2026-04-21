@@ -18,8 +18,8 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip3 install . 
-            mkdir ${HOME}/scratch 
+            pip3 install .
+            mkdir ${HOME}/scratch
             mkdir ${HOME}/scratch/downloads
             wget -c -P ${HOME}/scratch/downloads/ "https://osf.io/xv72t//download"
             tar xf ${HOME}/scratch/downloads/download -C ${HOME}/scratch

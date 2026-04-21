@@ -4,11 +4,11 @@
 node_modules
 npm-debug.log
 Dockerfile*
-CONTRIBUTORS.md 
-index.md 
+CONTRIBUTORS.md
+index.md
 NEWS.md
-_config.yml 
-.circleci 
+_config.yml
+.circleci
 MANIFEST.in
 .vscode
 **/.DS_Store

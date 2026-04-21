@@ -6,7 +6,7 @@ Here we have tried to define the purpose and usage of each class relavant to the
 
 ## rsHRF_GUI.core.Core
 
-This class in concerned with all the technical data-processing w.r.t the rsHRF toolbox. 
+This class in concerned with all the technical data-processing w.r.t the rsHRF toolbox.
 
 ### Class Variables
 - `self.parameters` -  an instance of the Parameters() object
@@ -113,9 +113,9 @@ These parameters are dependent parameters, and hence, these are automatically up
 
 - `get_parameters(self)` - returns all the parameters as a dictionary.
 - `set_parameters(self, dic)` - takes a dictionary as input and sets the parameters.
-- `compareParameters(self, p)` - takes another *parameters* object and compares whether it is similar as this parameters object or not. 
+- `compareParameters(self, p)` - takes another *parameters* object and compares whether it is similar as this parameters object or not.
 
---- 
+---
 
 ## rsHRF_GUI.datatypes.misc.store.Store
 This corresponds to where all the *subject* objects are dealt with.
@@ -133,7 +133,7 @@ This corresponds to where all the *subject* objects are dealt with.
 - `get_plotables(self, index)` - takes the subject index and returns all the plotables artefats associated to that subject.
 - `get_data_labels(self, index)` - returns labels for all the relavant artefacts corresponding to the subject given by the index.
 - `get_time_series(self, s)` - returns the time-series object corresponding to the string *s*.
-- `get_info(self, s)` - return the information regarding the time-series object corresponding to the string *s*. 
+- `get_info(self, s)` - return the information regarding the time-series object corresponding to the string *s*.
 - `is_present(self, subject_index)` - checks whether the subject corresponding to an index value is already present.
 - `add_subject(self, sub)` - takes a *subject* object and adds it into the store.
 - `remove_subject(self, sub)` - takes a *subject* object and removes it from the store.
@@ -156,14 +156,14 @@ This corresponds to every individual subject.
 
 ### Class Methods
 **Getters**
-- `get_input_filename(self)` 
+- `get_input_filename(self)`
 - `get_subject_index(self)`
 - `get_BOLD_raw(self)`
 - `get_BOLD_pre(self)`
 - `get_BOLD_deconv(self)`
 - `get_HRF(self)`
 
---- 
+---
 
 **Adding Data**
 
@@ -182,7 +182,7 @@ Adds time-series data to the existing collection.
 - `get_plotables(self)` - returns all the plotable time-series artefacts.
 - `get_data_labels(self)` - returns the lables for all the time-series artefacts.
 
---- 
+---
 
 ## rsHRF_GUI.datatypes.timeseries.TimeSeries
 This deals with the time-series objects.
@@ -201,12 +201,12 @@ This deals with the time-series objects.
 - `set_parameters(self, para)`
 - `set_label(self, label)`
 - `set_subject_index(self, subject_index)`
-  
+
 ---
 
 ** Getters *8
 - `get_ts(self)`
-- `get_subject_index(self)` 
+- `get_subject_index(self)`
 - `get_label(self)`
 - `get_parameters(self)`
 - `get_shape(self)`
@@ -219,7 +219,7 @@ This deals with the time-series objects.
 
 ---
 
-**Note:** The *rsHRF_GUI.datatypes.timeseries* package contains other classes: 
+**Note:** The *rsHRF_GUI.datatypes.timeseries* package contains other classes:
 <br>
 1. Bold_Deconv
 2. Bold_Preprocessed
@@ -272,13 +272,13 @@ This class is concerned with accepting the input, determining whether its in a v
 - `self.file_type` - stores the type of the file
 - `self.output_dir` - stores the path to the output directory
 
---- 
+---
 
 ### Class Methods
 
 - `getInput(self)` - retrieves the input from the GUI and passes it to `main.py`
 
---- 
+---
 
 ## rsHRF_GUI.misc.gui_windows.loggingWindow.LoggingWindow
 
@@ -309,7 +309,7 @@ This class is concerned with accepting the input, determining whether its in a v
 - `setParameters(self)` - sets the parameter dictionary
 - `display(self)` - puts the elements of the parameter dictionary into *self.labels* and *self.entries* in a way that they can be displayed by the logging-window.
 
---- 
+---
 
 ## rsHRF_GUI.misc.gui_windows.plotterOptionsWindow.PlotterOptionsWindow
 
@@ -329,11 +329,11 @@ This class is concerned with accepting the input, determining whether its in a v
 - `updateWidgets(self)` - updates the widgets on the *plotter-window*
 - `get_plotables(self)` - returns the plotables
 
---- 
+---
 
 ## rsHRF_GUI.misc.gui_windows.plotterWindow.PlotterWindow
 
-### Class Variables 
+### Class Variables
 - `self.numberOfPlots` - the number of plots that can be displayed at a time (right now = 3)
 - `self.ts` - list of time-series that are to be plotted
 - `self.plot` - displaying the plots

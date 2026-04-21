@@ -10,7 +10,7 @@ class PlotterOptionsWindow():
         screen_height = window.winfo_screenheight()
         window.geometry("650x200+%d+%d" % (screen_width/2.95, 100 + screen_height/2))
         self.plotterScreen = PlotterWindow()
-        
+
         # can have 3 different plots at once
         self.numberOfPlots = self.plotterScreen.get_numberOfPlots()
         self.plot          = [StringVar() for i in range(self.numberOfPlots)]
@@ -31,10 +31,10 @@ class PlotterOptionsWindow():
                     for each in self.plotables:
                         if each[0] == self.plot[i].get():
                             self.plotterScreen.makePlot(each[1][:,int(self.selectVoxel[i].get())], 1, i)
-                            return 
+                            return
                     self.plotterScreen.makePlot(None, 0, i)
-                    return   
-                
+                    return
+
         self.plotSelectDropDown = [OptionMenu(window, self.plot[i], *self.options) for i in range(self.numberOfPlots) for i in range(self.numberOfPlots)]
         self.selectVoxel        = [Entry(window, width=10) for i in range(self.numberOfPlots) for i in range(self.numberOfPlots)]
         self.plotButton         = [Checkbutton(window, text=" Plot TS " + str(i), variable=self.plotVal[i], command=plotTS) for i in range(self.numberOfPlots)]

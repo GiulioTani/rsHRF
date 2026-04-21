@@ -15,7 +15,7 @@ def wgr_regress(y, X):
     else:
         if np.amin(R.shape) == 1:
             # Accessing scalar safely via R.flat[0] for robustness
-            p = int(np.abs(R.flat[0]) > 0)    
+            p = int(np.abs(R.flat[0]) > 0)
         else:
             p = np.sum(np.abs(np.diagonal(R)) > abs(max(n, ncolX)*np.spacing(R[0][0])))
     if p < ncolX:
@@ -91,7 +91,7 @@ def wgr_glsco(X, Y, sMRI = [], AR_lag=0, max_iter=20):
             break
     res_sum = np.cov(resid)
     return res_sum, Beta
-    
+
 def Fit_sFIR2(output, length, TR, input, T, flag_sfir, AR_lag):
     NN = int(np.floor(length/TR))
     _input = np.expand_dims(input[0], axis=0)
@@ -119,7 +119,7 @@ def Fit_sFIR2(output, length, TR, input, T, flag_sfir, AR_lag):
         sigma = 1
         sMRI0 = sigma**2*MRI
         sMRI = np.zeros((NN+1, NN+1))
-        sMRI[0:NN,0:NN] = sMRI0; 
+        sMRI[0:NN,0:NN] = sMRI0;
         if AR_lag == 0:
             try:
                 hrf = linalg.solve((np.matmul(X.T,X)+sMRI),np.matmul(X.T,output))

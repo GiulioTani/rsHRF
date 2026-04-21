@@ -1,4 +1,4 @@
-import pytest 
+import pytest
 import numpy as np
 from ..spm_dep    import spm
 from ..processing import knee

@@ -6,7 +6,7 @@ addpath /home/redhood/Applications/spm12                                     % a
 addpath /home/redhood/Desktop/Work/GSoC-2020/rsHRF-Toolbox/rsHRF/Test/VoxelTest   % add the path to current directory
 addpath /home/redhood/Desktop/Work/GSoC-2020/rsHRF-master           % add the path to rsHRF-master directory
 addpath /home/redhood/Desktop/Work/GSoC-2020/rsHRF-Toolbox/demo_codes % add the path to rsHRF-master/demo_code
-savepath 
+savepath
 
 % Create output folder
 if ~exist('./Data','dir')
@@ -15,7 +15,7 @@ end
 
 % all the estimation rules
 BF = {'Canonical HRF (with time derivative)'
-'Canonical HRF (with time and dispersion derivatives)'            
+'Canonical HRF (with time and dispersion derivatives)'
 'Gamma functions'
 'Fourier set'
 'Fourier set (Hanning)'
@@ -34,7 +34,7 @@ max_onset_search = parameters(9);                % maximum delay allowed between
 para.dt          = para.TR/para.T;               % fine scale time resolution.
 para.AR_lag      = parameters(10);               % AR(1) noise autocorrelation.
 para.thr         = parameters(11);               % (mean+) para.thr*standard deviation threshold to detect event.
-para.len         = parameters(12);               % length of HRF, in seconds     
+para.len         = parameters(12);               % length of HRF, in seconds
 para.lag  = fix(min_onset_search/para.dt):fix(max_onset_search/para.dt);
 if para.T==1
     para.T0 = 1;
@@ -49,7 +49,7 @@ para.estimation = para.name;
 %%===================================
 
 %%===========fMRI Data===============
-%path            = '/home/redhood/Desktop/Work/GSoC-2020/rsHRF/Test/NITRC-multi-file-downloads/sub-10171/func/'; % input directory 
+%path            = '/home/redhood/Desktop/Work/GSoC-2020/rsHRF/Test/NITRC-multi-file-downloads/sub-10171/func/'; % input directory
 inputFilePath   = strcat(path,'sub-10171_task-rest_bold_space-T1w_preproc.nii');
 maskFilePath    = strcat(path,'sub-10171_task-rest_bold_space-T1w_brainmask.nii');
 

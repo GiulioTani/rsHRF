@@ -1,6 +1,6 @@
 import pytest
-import numpy as np 
-from ..processing import rest_filter 
+import numpy as np
+from ..processing import rest_filter
 
 def test_conn_filter():
     TR = np.random.randint(1, 10)

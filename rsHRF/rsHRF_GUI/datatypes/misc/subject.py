@@ -19,29 +19,29 @@ class Subject():
         self.BOLD_pre       = []
         self.BOLD_deconv    = []
         self.HRF            = []
-    
+
     # getters
     def get_input_filename(self):
-        return self.input_filename 
-    
+        return self.input_filename
+
     def get_subject_index(self):
         return self.index
-    
+
     def get_BOLD_raw(self):
         return tuple(self.BOLD_raw)
-    
+
     def get_BOLD_pre(self):
         return tuple(self.BOLD_pre)
-    
+
     def get_BOLD_deconv(self):
         return tuple(self.BOLD_deconv)
-    
+
     def get_HRF(self):
         return tuple(self.HRF)
 
     # adding to time-series objects of the existing subject
     def add_BOLD_raw(self, ts):
-        self.BOLD_raw.append(ts) 
+        self.BOLD_raw.append(ts)
         return len(self.BOLD_raw) - 1
 
     def add_BOLD_deconv(self, ts):
@@ -58,7 +58,7 @@ class Subject():
 
     # misc.
     def is_present(self, label, misc, getts=False):
-        """ Checks whether a time-series is already present 
+        """ Checks whether a time-series is already present
             Misc takes in all the relevant information which determines the uniqueness
                 of a time-series
             If getts = True, the function returns the time-series object if it is present """
@@ -70,7 +70,7 @@ class Subject():
                 if misc == each.get_inputfile():
                     if getts :
                         return each
-                    return True 
+                    return True
         elif label == "Preprocessed-BOLD":
             # Looking for Preprocessed BOLD Data
             para     = misc[0]
@@ -84,7 +84,7 @@ class Subject():
                     and bold.compareTimeSeries(each.get_BOLD_Raw()):
                     if getts:
                         return each
-                    return True 
+                    return True
         elif label == "HRF":
             # Looking for HRF Data
             para     = misc[0]
@@ -110,20 +110,20 @@ class Subject():
                         return each
                     return True
         return False
-    
+
     def get_time_series_pos(self, ts):
-        """ 
+        """
         Takes the time-series as input and returns its position in the array
         """
         label = ts.get_label()
         if label    == "BOLD":
-            arr     = self.BOLD_raw 
+            arr     = self.BOLD_raw
         elif label  == "Preprocessed-BOLD":
-            arr     = self.BOLD_pre 
+            arr     = self.BOLD_pre
         elif label  == "Deconvolved-BOLD":
             arr     = self.BOLD_deconv
         elif label  == "HRF":
-            arr     = self.HRF 
+            arr     = self.HRF
         else :
             arr     = []
         for i in range(len(arr)):
@@ -134,21 +134,21 @@ class Subject():
     def get_time_series_by_index(self, ts_type, index):
         """ Takes the index of a time-series and returns the time-series """
         if ts_type == "BOLD":
-            arr = self.BOLD_raw 
+            arr = self.BOLD_raw
         elif ts_type == "Preprocessed-BOLD":
-            arr = self.BOLD_pre 
+            arr = self.BOLD_pre
         elif ts_type == "Deconvolved-BOLD":
-            arr = self.BOLD_deconv 
+            arr = self.BOLD_deconv
         elif ts_type == "HRF":
-            arr = self.HRF 
+            arr = self.HRF
         else:
             return
         return arr[index]
 
     def get_plotables(self):
-        """ 
+        """
         Returns an array of all the time-series objects that can be plotted for the subject
-        The array contains of tuples of the format : (time-series labels, time-series numpy arrays) 
+        The array contains of tuples of the format : (time-series labels, time-series numpy arrays)
         """
         out = []
         for i in range(len(self.BOLD_raw)):
@@ -163,7 +163,7 @@ class Subject():
 
     def get_data_labels(self):
         """
-        Returns an array with labels for all the time-series objects for the subject 
+        Returns an array with labels for all the time-series objects for the subject
         """
         out = []
         for i in range(len(self.BOLD_raw)):
@@ -176,5 +176,5 @@ class Subject():
             out.append(self.index+"_HRF_"+str(i))
         return out
 
-    
-    
+
+

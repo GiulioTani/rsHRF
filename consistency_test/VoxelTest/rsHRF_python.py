@@ -42,7 +42,7 @@ else:
 if para['T']  == 1:
     para['T0'] = 1
 
-voxel_id = int(parameterFile[12]) 
+voxel_id = int(parameterFile[12])
 
 # looping over all the estimation rules
 for i in range(0, 7):

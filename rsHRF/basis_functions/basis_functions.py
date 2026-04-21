@@ -47,7 +47,7 @@ def fourier_bf(pst, para):
     else:
         g = np.ones(len(pst))
     sin_ = lambda x : np.sin(x*2*math.pi)
-    cos_ = lambda x : np.cos(x*2*math.pi) 
+    cos_ = lambda x : np.cos(x*2*math.pi)
     sin_ = np.vectorize(sin_)
     cos_ = np.vectorize(cos_)
     arr = np.arange(1, para['order']+1)

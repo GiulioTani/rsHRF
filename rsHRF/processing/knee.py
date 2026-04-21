@@ -8,9 +8,9 @@ def knee_pt(y):
     _idm = np.argmin(y)
     ratio = np.abs(y[_id]-y[_idm])/np.abs(np.max(y) - np.min(y))
     if ratio > 0.5:
-        idx_of_result = _idm 
+        idx_of_result = _idm
     else:
-        idx_of_result = _id 
+        idx_of_result = _id
     return res_x, idx_of_result
 
 def knee_pt_helper(y, x=None):

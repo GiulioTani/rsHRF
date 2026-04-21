@@ -1,6 +1,6 @@
 import pytest
-import numpy as np 
-from ..sFIR import smooth_fir 
+import numpy as np
+from ..sFIR import smooth_fir
 
 def test_wgr_regress():
     val1 = np.random.randint(1, 10)
@@ -29,7 +29,7 @@ def test_wgr_glsco():
     max_iter = 20
     out = smooth_fir.wgr_glsco(X, Y, sMRI = sMRI, AR_lag=AR_lag, max_iter=max_iter)
     assert type(out) == type(())
-    out1, out2 = out 
+    out1, out2 = out
     assert type(out1) == type(np.asarray([]))
     assert type(out2) == type(np.asarray([]))
     assert out1.size == 1
@@ -38,7 +38,7 @@ def test_wgr_glsco():
     Y = np.asarray([0.23860649900343323, 0.5973580998661552, 0.3928186546630218, 0.05778943990961405, 0.7063978648709636, 0.07370285332712434, 0.009135396063910783, 0.09269627999757779, 0.5547467325191129, 0.9656335840727327])
     out = smooth_fir.wgr_glsco(X, Y, sMRI = sMRI, AR_lag=AR_lag, max_iter=max_iter)
     out1, out2 = out
-    out1_exp = np.asarray([0.02611677]) 
+    out1_exp = np.asarray([0.02611677])
     out2_exp = np.asarray([ 0.0367933 ,  0.51386258, -0.97340772,  1.26010343])
     assert np.allclose(np.asarray(out1), out1_exp)
     assert np.allclose(np.asarray(out2), out2_exp)
@@ -46,22 +46,22 @@ def test_wgr_glsco():
 def test_Fit_sFIR2():
     val = np.random.randint(11, 200)
     output = np.random.random((val))
-    length = 24 
+    length = 24
     TR = 2.0
-    inp = np.random.random((val, 1)) 
-    T = 12 
+    inp = np.random.random((val, 1))
+    T = 12
     flag_sfir = 1
-    AR_lag = 1   
+    AR_lag = 1
     out = smooth_fir.Fit_sFIR2(output, length, TR, inp, T, flag_sfir, AR_lag)
     assert type(out) == type(())
-    out1, out2 = out 
+    out1, out2 = out
     assert type(out1) == type(np.asarray([]))
     assert out1.size == 13
     assert type(out2) == type(np.asarray([]))
     assert out2.size == 1
     output = np.zeros((val))
     out = smooth_fir.Fit_sFIR2(output, length, TR, inp, T, flag_sfir, AR_lag)
-    out1, out2 = out 
+    out1, out2 = out
     assert np.allclose(np.zeros((13)), out1)
     assert np.allclose(np.zeros((1)), out2)
     inp = np.asarray([[0.11208123437880424], [0.47337000532832263], [0.5496760145257539], [0.1984332652066324], [0.29117413061557396], [0.707023774370774], [0.7601515226800849], [0.7330200743158585], [0.5033685350197652], [0.6139854490565899], [0.050357274201077495], [0.15618758068425953], [0.17767321816121273], [0.8491434293211506], [0.9017948328311318], [0.3170850576159929], [0.2645298774321433], [0.3485067071439355], [0.13392947284086754], [0.5564549094193428], [0.7549219830345042], [0.41491153064393316], [0.052470190827242136], [0.7863378666190465], [0.6221018221283174], [0.5318620796466], [0.9184682835509385], [0.09511349772823907], [0.2641100933731456], [0.5577093763583515]])
@@ -69,9 +69,9 @@ def test_Fit_sFIR2():
     out2_exp = 0.062454251905728904
     out1_exp = np.asarray([-0.006013666009659839, -0.021447182383702836, -0.023945735843657407, -0.018371231986189136, -0.02233574736823547, -0.020078382177641022, 0.010920928033064338, 0.051249693019481325, 0.06888676660465594, 0.06398005690442186, 0.048868321199953546, 0.07298304109849973, 0.3096652201182815])
     out = smooth_fir.Fit_sFIR2(output, length, TR, inp, T, flag_sfir, AR_lag)
-    out1, out2 = out 
+    out1, out2 = out
     assert np.allclose(out1_exp ,out1)
-    assert np.allclose(out2_exp ,out2) 
+    assert np.allclose(out2_exp ,out2)
 
 def test_wgr_FIR_estimation_HRF():
     u = np.random.random((7))
@@ -83,9 +83,9 @@ def test_wgr_FIR_estimation_HRF():
     u = np.asarray([0.8265743871886244, 0.4571816356384941, 0.9167817425355507, 0.6497771799779721, 0.6873170490384577, 0.45801903592817417, 0.7458612352409498])
     dat = np.asarray([0.07965334399271984, 0.5784720482033168, 0.7241693158799498, 0.8594543092961181, 0.3333887323361263, 0.8663470970895705, 0.1692672051067885, 0.8132782708370856, 0.3545430163067911, 0.1389518058293373, 0.04008377738610536, 0.5251678917354534, 0.03331965019371441, 0.5560024201801771, 0.6492800171038505])
     output = smooth_fir.wgr_FIR_estimation_HRF(u, dat, para, N)
-    out1, out2 = output 
+    out1, out2 = output
     assert type(out1) == type(np.asarray([]))
     assert type(out2) == type(np.asarray([]))
     assert np.allclose(out1, np.zeros((13)))
     out2_exp = np.array([0.82657439, 0.45718164, 0.91678174, 0.64977718, 0.68731705, 0.45801904, 0.74586124])
-    assert np.allclose(out2_exp ,out2) 
+    assert np.allclose(out2_exp ,out2)

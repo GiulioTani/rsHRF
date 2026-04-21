@@ -7,9 +7,9 @@ from .inputWindow          import InputWindow
 from .loggingWindow        import LoggingWindow
 from .plotterOptionsWindow import PlotterOptionsWindow
 from .parameterWindow      import ParameterWindow
-     
+
 from ..misc.status import Status
-from ..core.core   import Core 
+from ..core.core   import Core
 
 class Main():
     def __init__(self):
@@ -37,7 +37,7 @@ class Main():
         current_subject.set("None")
         # other variables
         input            = ()    # receives the input from the input window
-        output           = {}    # receives the output from the core 
+        output           = {}    # receives the output from the core
         # initializing parameter window
         parameter_window.setParameters(core.get_parameters())
         parameter_window.display()
@@ -93,7 +93,7 @@ class Main():
             # logging
             output.set_time(str(time_taken)[:5])
             logger.putLog(status=output)
-        
+
         def retrieveHRF(get_pos=False):
             if "Preprocessed-BOLD" not in current.get():
                 logger.putLog(status=Status(False, error="Select a Preprocessed-BOLD Timeseries to retrieve HRF"))
@@ -107,7 +107,7 @@ class Main():
                 # logging
                 time_taken                  = time.process_time() - start
                 if get_pos:
-                    output, pos = output 
+                    output, pos = output
                 else:
                     pos         = None
                 output.set_time(str(time_taken)[:5])
@@ -126,7 +126,7 @@ class Main():
                 # updating data
                 updateValues(log=False)
                 # logging
-                time_taken                  = time.process_time() - start 
+                time_taken                  = time.process_time() - start
                 output.set_time(str(time_taken)[:5])
                 logger.putLog(status=output)
 
@@ -142,7 +142,7 @@ class Main():
                 # updating data
                 updateValues(log=False)
                 # logging
-                time_taken                  = time.process_time() - start 
+                time_taken                  = time.process_time() - start
                 output.set_time(str(time_taken)[:5])
                 logger.putLog(status=output)
 
@@ -161,7 +161,7 @@ class Main():
             # interacting with the core
             try:
                 plotables                   = core.get_plotables(current_subject.get())
-            except: 
+            except:
                 logger.putLog(status=Status(False, error="Please select a subject"))
             else:
                 # logging
@@ -177,39 +177,39 @@ class Main():
                 if len(current.get().split("_")) == 3:
                     logger.putLog(data_info=core.get_store_info(current.get()))
                 else:
-                    logger.putLog(status = Status(False, error="Select a valid input to get information")) 
-            except: 
-                logger.putLog(status = Status(False, error="Select a valid input to get information")) 
-   
+                    logger.putLog(status = Status(False, error="Select a valid input to get information"))
+            except:
+                logger.putLog(status = Status(False, error="Select a valid input to get information"))
+
         def saveValue():
             try:
                 if len(current.get().split("_")) == 3:
                     if os.path.isdir(output_path):
-                        out = output_path 
+                        out = output_path
                     else:
-                        out = os.cwd() 
+                        out = os.cwd()
                     if core.save_info(current.get(), out):
-                        logger.putLog(status = Status(True, info="File saved successfully"))   
+                        logger.putLog(status = Status(True, info="File saved successfully"))
                     else:
-                        logger.putLog(status = Status(False, error="Unable to save file"))      
+                        logger.putLog(status = Status(False, error="Unable to save file"))
                 else:
-                    logger.putLog(status = Status(False, error="Select a valid input to save")) 
+                    logger.putLog(status = Status(False, error="Select a valid input to save"))
             except:
-                logger.putLog(status = Status(False, error="Select a valid input to save")) 
+                logger.putLog(status = Status(False, error="Select a valid input to save"))
 
         def saveForSubject():
             try:
                 temp                        = core.get_data_labels(current_subject.get())
             except:
-                logger.putLog(status=Status(False, error="Please select a subject")) 
+                logger.putLog(status=Status(False, error="Please select a subject"))
             else:
                 for each in temp:
                     current.set(each)
                     saveValue()
-        
+
         def add_new(l1, l2):
             if l1 == None:
-                return l2 
+                return l2
             if l2 == None:
                 return l1
             out = []
@@ -219,7 +219,7 @@ class Main():
             for each in l2:
                 out.append(each)
             return out
-        
+
         def updateSubjects():
             temp                        = list(core.get_subjects())
             temp.append                 ("None")
@@ -227,7 +227,7 @@ class Main():
             self.subjects               = sorted(self.subjects)
             subjectOptions              = OptionMenu(root, current_subject, *self.subjects)
             subjectOptions.grid         (row=0,column=1,padx=(30,30),pady=(5,5))
-        
+
         def updateValues(log=True):
             try:
                 temp                        = core.get_data_labels(current_subject.get())
@@ -242,7 +242,7 @@ class Main():
                 valueOptions            = OptionMenu(root, current,         *self.options)
                 valueOptions.grid       (row=1,column=1,padx=(30,30),pady=(5,5))
 
-       
+
 
         # defining the widgets
         getInput                        = Button    (root, text="Get Input",               command=makeInput,             height = 1, width = 20)
@@ -280,7 +280,7 @@ class Main():
         saveAllValues.grid              (row=7,column=1,padx=(30,30),pady=(5,5))
 
         root.mainloop()
-    
+
 
 if __name__ == "__main__":
     Main()

@@ -61,7 +61,7 @@ def test_spm_hrf():
         hrf = spm.spm_hrf(test)
         assert type(hrf) == type(np.asarray([]))
         assert len(hrf.shape) == 1
-        assert hrf.size in [int(33/test) - 1, int(33/test), int(33/test) + 1] 
+        assert hrf.size in [int(33/test) - 1, int(33/test), int(33/test) + 1]
 
 def test_spm_detrend():
     tests = [(3, 4), (7, 5), (4, 12), (13, 6), (11, 11)]
@@ -69,8 +69,8 @@ def test_spm_detrend():
         X = np.random.random(test)
         Y = spm.spm_detrend(X)
         assert type(Y) == type(X)
-        assert Y.shape == X.shape 
-        Y = Y.T 
+        assert Y.shape == X.shape
+        Y = Y.T
         Y_sum = np.sum(Y, axis=1)
         assert np.allclose(Y_sum, np.zeros(Y_sum.shape))
 

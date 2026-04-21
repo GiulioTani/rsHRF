@@ -37,7 +37,7 @@ class LoggingWindow():
                 self.text.tag_add("error", str(self.lineNum) + ".12", str(self.lineNum) + ".18")
                 self.text.tag_config("error", foreground="red")
                 self.text.tag_add("error message", str(self.lineNum) + ".18", str(self.lineNum) + "." + str(19 + len(message)))
-                self.text.tag_config("error message", foreground="yellow")    
+                self.text.tag_config("error message", foreground="yellow")
             self.text.tag_add("time", str(self.lineNum) + ".03", str(self.lineNum) + ".11")
             self.text.tag_config("time", foreground="PeachPuff2")
             self.lineNum += 1
@@ -75,7 +75,7 @@ class LoggingWindow():
             self.text.insert(INSERT, "\n")
             self.lineNum += 5
             return
-        
+
         elif data_info is not None:
             self.text.insert(INSERT, \
                 ">> " + current_time + "\t Information \n\n")
@@ -86,34 +86,34 @@ class LoggingWindow():
             self.lineNum += 2
             if data_info["Type"] == "BOLD":
                 self.text.insert(INSERT, \
-                    "   :- " + "Type of Data: BOLD Time Series\n" + 
+                    "   :- " + "Type of Data: BOLD Time Series\n" +
                     "   :- " + "Subject: " + data_info["Subject"] + "\n"
                     "   :- " + "Input File: " + data_info["Input File"] + "\n"
                     )
                 self.lineNum += 1
             elif data_info["Type"] == "Preprocessed-BOLD":
                 self.text.insert(INSERT, \
-                    "   :- " + "Type of Data: Preprocessed-BOLD Time Series\n" + 
+                    "   :- " + "Type of Data: Preprocessed-BOLD Time Series\n" +
                     "   :- " + "Subject: " + data_info["Subject"] + "\n" +
-                    "   :- " + "Mask File: " + data_info["Mask File"] + "\n" + 
+                    "   :- " + "Mask File: " + data_info["Mask File"] + "\n" +
                     "   :- " + "Associated Raw BOLD: " + data_info["Associated Raw BOLD"] + "\n"
                     )
                 self.lineNum += 2
             elif data_info["Type"] == "HRF":
                 self.text.insert(INSERT, \
-                    "   :- " + "Type of Data: Hemodynamic Response Function Time Series\n" + 
+                    "   :- " + "Type of Data: Hemodynamic Response Function Time Series\n" +
                     "   :- " + "Associated BOLD: " + data_info["Associated BOLD"] + "\n"
                     )
             elif data_info["Type"] == "Deconvolved-BOLD":
                 self.text.insert(INSERT, \
-                    "   :- " + "Type of Data: Deconvolved BOLD Time Series\n" + 
+                    "   :- " + "Type of Data: Deconvolved BOLD Time Series\n" +
                     "   :- " + "Associated HRF: " + data_info["Associated HRF"] + "\n"
                     )
             self.text.tag_config("type", foreground="azure")
             self.text.tag_config("line2", foreground="azure")
-            self.lineNum += 2 
+            self.lineNum += 2
             self.text.insert(INSERT, \
-                    "   :- " + "\t\t\tAssociated Parameters\n" 
+                    "   :- " + "\t\t\tAssociated Parameters\n"
                     )
             self.text.tag_add("ap", str(self.lineNum) + ".03", str(self.lineNum) + ".30")
             self.text.tag_config("ap", foreground="Khaki1")

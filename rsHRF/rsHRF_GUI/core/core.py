@@ -125,7 +125,7 @@ class Core():
                 for i in range(len(all_inputs)):
                     input_prefix = all_inputs[i].split('/')[-1].split('_desc')[0]
                     mask_prefix = all_masks[i].split('/')[-1].split('_desc')[0]
-                  
+
                     if input_prefix == mask_prefix:
                         prefix_match_count += 1
                     else:

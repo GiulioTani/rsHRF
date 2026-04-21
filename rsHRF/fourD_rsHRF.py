@@ -5,7 +5,7 @@ import numpy             as np
 import nibabel           as nib
 import scipy.io          as sio
 import matplotlib.pyplot as plt
-from bids.layout  import BIDSLayout, parse_file_entities 
+from bids.layout  import BIDSLayout, parse_file_entities
 from scipy        import stats, signal
 from scipy.sparse import lil_matrix
 from rsHRF        import spm_dep, processing, parameters, basis_functions, utils, iterative_wiener_deconv
@@ -29,7 +29,7 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
             name = input_file.split('/')[-1].split('.')[0]
             v1 = spm_dep.spm.spm_vol(input_file)
         else:
-            name = input_file.split('/')[-1].split('.')[0]   
+            name = input_file.split('/')[-1].split('.')[0]
             v1 = spm_dep.spm.spm_vol(input_file)
         if mask_file != None:
             if mode == 'bids':
@@ -49,17 +49,17 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
                 raise ValueError ('Inconsistency in input-mask dimensions' + '\n\tinput_file == ' + name + file_type + '\n\tmask_file == ' + mask_name + file_type)
             else:
                 if file_type == ".nii" or file_type == ".nii.gz" :
-                    data   = v1.get_fdata()      
+                    data   = v1.get_fdata()
                 else:
                     data   = v1.agg_data()
         else:
             print('No atlas provided! Generating mask file...')
             if file_type == ".nii" or file_type == ".nii.gz" :
-                data   = v1.get_fdata() 
+                data   = v1.get_fdata()
                 brain  = np.nanvar(data.reshape(-1, data.shape[3]), -1, ddof=0)
             else:
                 data   = v1.agg_data()
-                brain  = np.nanvar(data, -1, ddof=0) 
+                brain  = np.nanvar(data, -1, ddof=0)
             print('Done')
         voxel_ind  = np.where(brain > 0)[0]
         mask_shape = data.shape[:-1]
@@ -74,20 +74,20 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
             data1 = np.expand_dims(data1, axis=1)
         nobs = data1.shape[0]
         bold_sig = stats.zscore(data1, ddof=1)
-        
+
     if len(temporal_mask) > 0 and len(temporal_mask) != nobs:
         raise ValueError ('Inconsistency in temporal_mask dimensions.\n' + 'Size of mask: ' + str(len(temporal_mask)) + '\n' + 'Size of time-series: ' + str(nobs))
-        
+
     bold_sig = np.nan_to_num(bold_sig)
     bold_sig_deconv = processing. \
                       rest_filter. \
-                      rest_IdealFilter(bold_sig, para['TR'], para['passband_deconvolve'])   
+                      rest_IdealFilter(bold_sig, para['TR'], para['passband_deconvolve'])
     bold_sig = processing. \
                rest_filter. \
-               rest_IdealFilter(bold_sig, para['TR'], para['passband'])   
+               rest_IdealFilter(bold_sig, para['TR'], para['passband'])
     data_deconv  = np.zeros(bold_sig.shape)
     event_number = np.zeros((1, bold_sig.shape[1]))
-    
+
     print('Retrieving HRF ...')
     bf = None # Initialize bf to avoid UnboundLocalError
     # Estimate HRF for the fourier / hanning / gamma / cannon basis functions
@@ -97,20 +97,20 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
         hrfa = np.dot(bf, beta_hrf[np.arange(0, bf.shape[1]), :])
     # Estimate HRF for FIR and sFIR
     else:
-        para['T'] = 1        
+        para['T'] = 1
         beta_hrf, event_bold = utils.hrf_estimation.compute_hrf(bold_sig, para, temporal_mask, p_jobs)
         hrfa = beta_hrf[:-1,:]
-        
+
     nvar = hrfa.shape[1]
     PARA = np.zeros((3, nvar))
     for voxel_id in range(nvar):
         hrf1 = hrfa[:, voxel_id]
         PARA[:, voxel_id] = \
             parameters.wgr_get_parameters(hrf1, para['TR'] / para['T'])
-            
+
     print('Done')
     print('Deconvolving HRF ...')
-    
+
     if para['T'] > 1:
         hrfa_TR = signal.resample_poly(hrfa, 1, para['T'])
     else:
@@ -144,32 +144,32 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
     for v_id in range(nvar):
         data_deconv[:, v_id] = results[v_id]
         event_number[:, v_id] = np.amax(event_bold[v_id].shape)
-        
+
     print('Done')
     print('Saving Output ...')
-    
+
     # setting the output-path
     if mode == 'bids' or mode == 'bids w/ atlas':
         layout_output = BIDSLayout(output_dir)
         entities = parse_file_entities(input_file)
-        sub_save_dir = layout_output.build_path(entities).rsplit('/',1)[0]            
+        sub_save_dir = layout_output.build_path(entities).rsplit('/',1)[0]
     else:
         sub_save_dir = output_dir
-        
+
     if not os.path.isdir(sub_save_dir):
         os.makedirs(sub_save_dir, exist_ok=True)
-        
+
     dic = {'para': para, 'hrfa': hrfa, 'event_bold': event_bold, 'PARA': PARA}
     ext = '_hrf.mat'
     if mode == "time-series":
         dic["event_number"] = event_number
         dic["data_deconv"]  = data_deconv
         ext = '_hrf_deconv.mat'
-        
-    name = name.rsplit('_bold', 1)[0]   
+
+    name = name.rsplit('_bold', 1)[0]
     sio.savemat(os.path.join(sub_save_dir, name + ext), dic)
     HRF_para_str = ['height', 'T2P', 'FWHM']
-    
+
     if mode != "time-series":
         mask_data = np.zeros(mask_shape).flatten(order='F')
         for i in range(3):
@@ -179,12 +179,12 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
             mask_data = mask_data.reshape(mask_shape, order='F')
             spm_dep.spm.spm_write_vol(v1, mask_data, fname, file_type)
             mask_data = mask_data.flatten(order='F')
-            
+
         fname = os.path.join(sub_save_dir, name + '_eventnumber')
         mask_data[voxel_ind] = event_number
         mask_data = mask_data.reshape(mask_shape, order='F')
         spm_dep.spm.spm_write_vol(v1, mask_data, fname, file_type)
-        
+
         mask_data = np.zeros(data.shape)
         dat3 = np.zeros(data.shape[:-1]).flatten(order='F')
         for i in range(nobs):
@@ -197,20 +197,20 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
                 mask_data[:, i] = dat3
             dat3 = dat3.flatten(order='F')
         spm_dep.spm.spm_write_vol(v1, mask_data, fname, file_type)
-        
+
     pos = 0
     while pos < hrfa_TR.shape[1]:
         if np.any(hrfa_TR[:,pos]):
-            break 
+            break
         pos += 1
-        
+
     event_plot = lil_matrix((1, nobs))
     if event_bold.size:
         event_plot[:, event_bold[pos]] = 1
     else:
         print("No Events Detected!")
         return 0
-        
+
     event_plot = np.ravel(event_plot.toarray())
     plt.figure()
     plt.plot(para['TR'] * np.arange(1, np.amax(hrfa_TR[:, pos].shape) + 1),
@@ -231,7 +231,7 @@ def demo_rsHRF(input_file, mask_file, output_dir, para, p_jobs, file_type=".nii"
     plt.setp(markerline, 'color', 'k', 'markersize', 3, 'marker', 'd')
     plt.legend(['BOLD', 'Deconvolved BOLD', 'Events'], loc='best')
     plt.xlabel('time (s)')
-    plt.savefig(os.path.join(sub_save_dir, name + '_deconvolution_plot.png'))   
-    
+    plt.savefig(os.path.join(sub_save_dir, name + '_deconvolution_plot.png'))
+
     print('Done')
     return 0

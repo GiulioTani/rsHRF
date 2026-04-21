@@ -2,7 +2,7 @@
 
 ### Installation and Setup
 ----
-This App can be used as a *standalone Python Package* OR as a *BIDS-App through Docker*. 
+This App can be used as a *standalone Python Package* OR as a *BIDS-App through Docker*.
 
 #### Standalone Python Package (Command Line Interface)
 To be used as a command line tool, ensure that you have ``Python>=3.6`` and use the command ``pip3 install rsHRF``. This command takes care of all the necessary dependencies so that the tool is usable straight out of the box. Once done, run ``rsHRF --help`` to see the required positional and optional arguments. The command line for the app installed in this way is ``rsHRF``.
@@ -27,11 +27,11 @@ In essence, the whole usage of the application can be broken down to 8 major ste
  ``--input_file`` optional argument followed by the path of the file.
 
  * A standalone `` .txt `` file. This option can be accessed using the
- ``--ts`` optional argument followed by the path of the file. 
+ ``--ts`` optional argument followed by the path of the file.
 
- * A BIDS formatted data-set directory. This option can be accessed using the ``--bids_dir`` optional argument followed by the path of the directory. 
+ * A BIDS formatted data-set directory. This option can be accessed using the ``--bids_dir`` optional argument followed by the path of the directory.
 This requires the input dataset to be in valid BIDS format, and have a derivatives type with preprocessed resting-state fMRI data. We highly recommend that you validate your dataset with the free, online [BIDS Validator](https://bids-standard.github.io/bids-validator/).
-   
+
  Out of the above 3 options, one of them is always required and more than one cannot be supplied at once.
 
 **The mask / atlas files:**
@@ -67,26 +67,26 @@ This requires the input dataset to be in valid BIDS format, and have a derivativ
  The application then pairs the input_files with their corresponding masks provided that
  the 2 files share a common prefix.
 
-**The output directory:** 
+**The output directory:**
 
  The output directory is accessed using ``--output_dir``, and is the folder under which all the resulting
- ``.nii / .gii / .mat / .png `` files will be stored. The application further makes folders for each of 
+ ``.nii / .gii / .mat / .png `` files will be stored. The application further makes folders for each of
  the participants / subjects if the input is supplied through the argument ``--bids_dir``.
- In the case of ``--ts`` argument, all the output types are stored in the ``.mat`` file. 
+ In the case of ``--ts`` argument, all the output types are stored in the ``.mat`` file.
  It is mandatory to provide an output directory.
 
 **The Analysis Level:**
 
  There are 2 kinds of analysis that can be performed. This can be accessed using ``--analysis_level``.
 
- * ``participant`` : participant level analysis performs the analysis for each (or some) subject(s) 
+ * ``participant`` : participant level analysis performs the analysis for each (or some) subject(s)
  present in the BIDS formatted data-set. This is mandatory when the
- input is supplied with ``--bids_dir`` as group level analysis is not supported yet. This should not be 
+ input is supplied with ``--bids_dir`` as group level analysis is not supported yet. This should not be
  supplied when input is supplied with ``--input_file`` argument. Doing so shall result in an error.
 
  * ``group`` : Coming Soon! - Use ``participant`` for now.
 
-**The Analysis Method:** 
+**The Analysis Method:**
 
  The analysis can be carried out using 6 estimation methods.
 
@@ -95,7 +95,7 @@ This requires the input dataset to be in valid BIDS format, and have a derivativ
  One of them needs to be supplied using the ``--estimation`` argument followed by
  one of the above 3 choices.
 
-**The input parameters:** 
+**The input parameters:**
 
  There are many input parameters that can be supplied to customize the analysis.
  Please see all of them under the ``Parameters`` heading under the documentation
@@ -110,8 +110,8 @@ This requires the input dataset to be in valid BIDS format, and have a derivativ
 
 **Select only certain BIDS files to be input to the BIDS-App**:
 
-Using the ``--bids_filter_file`` argument, you can pass the BIDS-App a JSON file that describes a custom BIDS filter for selecting files with PyBIDS, 
-with the syntax ``{<query>: {<entity>: <filter>, ...},...}.`` 
+Using the ``--bids_filter_file`` argument, you can pass the BIDS-App a JSON file that describes a custom BIDS filter for selecting files with PyBIDS,
+with the syntax ``{<query>: {<entity>: <filter>, ...},...}.``
 
 Queries can be defined for ```bold``` and/or ```mask``` in the ```.JSON``` file which allows the user to filter the BIDS-data to be input.
 
@@ -125,7 +125,7 @@ For example :
      'desc': 'preproc',
      'suffix': 'bold',
      'extension' : 'nii.gz'
-     
+
      },
         'mask': {
      'datatype': 'func',
@@ -133,7 +133,7 @@ For example :
      'desc': 'brain',
      'suffix': 'mask',
      'extension': 'nii.gz'
-     } 
+     }
 }
 
 ```
@@ -148,7 +148,7 @@ rsHRF-BIDS app uses the following queries, by default :
    'mask' : {'datatype': 'func', 'suffix': 'mask', 'extension': 'nii.gz', 'desc': 'brain', 'task': 'rest'}
 ```
 
-This means that the BIDS-App by default checks for ```bold``` or ```mask``` BIDS-data that has the following entities: 
+This means that the BIDS-App by default checks for ```bold``` or ```mask``` BIDS-data that has the following entities:
 
      bold : sub-<label>/func/sub<label>-task_rest-desc_preproc_bold.nii.gz
      mask : sub-<label>/func/sub<label>-task_rest-desc_brain_mask.nii.gz
@@ -216,7 +216,7 @@ directory. The corresponding mask is the ``mask_file`` that should have a matchi
 
 #### Running the analysis with a BIDS formatted data-set and a common mask file to be used for all the input files present in the data-set.
 
-Note: By default all input files in the BIDS directory need to be of the type ``*_bold.nii`` or 
+Note: By default all input files in the BIDS directory need to be of the type ``*_bold.nii`` or
 ``*_bold.nii.gz``. Also, they must be present in the ``func`` directory under their
 respective subject / session folder.
 
@@ -234,18 +234,18 @@ docker run -ti --rm \
 bids/rshrf --bids_dir input_dir --output_dir results --analysis_level participant --atlas mask/mask_file  --estimation sFIR
 ```
 
-In the above example, the ``output_dir`` is ``results`` directory. The 
+In the above example, the ``output_dir`` is ``results`` directory. The
 corresponding mask supplied is ``mask_file`` which should have the same extension as input files from the BIDS formatted data-set (``.nii/.nii.gz``). The BIDS formatted data-set
 lies in the ``input_dir`` directory. The analysis level is ``participant``. The analysis will be performed for all subjects since no specific subjects are mentioned using ``--participant_label``.
 
-#### Running the analysis with a BIDS formatted data-set that also includes a unique mask file for each of the input file present. 
+#### Running the analysis with a BIDS formatted data-set that also includes a unique mask file for each of the input file present.
 
-Note: By default all input files in the BIDs directory need to have the suffix of the type ``*_bold.nii`` or 
+Note: By default all input files in the BIDs directory need to have the suffix of the type ``*_bold.nii`` or
 ``*_bold.nii.gz``. The corresponding mask files in the BIDs directory need to
-be of the type ``*_mask.nii`` or ``*_mask.nii.gz``. Also, they must be 
+be of the type ``*_mask.nii`` or ``*_mask.nii.gz``. Also, they must be
 present in the ``func`` directory under their respective subject / session folder.
 Furthermore, two corresponding input and mask files need to have the same prefix.
- 
+
 For example, 2 corresponding input and mask files according to BIDS format can be ``input_bold.nii`` and
 ``input_mask.nii``. These 2 will then be paired up for analysis.
 
@@ -268,7 +268,7 @@ The analysis level is ``participant``. The analysis is performed only for ``sub-
 out of all the available subjects in the BIDS dataset.
 
 
-#### Running the analysis using BIDS-filter to input certain files to BIDS-App. 
+#### Running the analysis using BIDS-filter to input certain files to BIDS-App.
 
 a) Through the Python Package
 

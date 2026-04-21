@@ -53,11 +53,11 @@ def get_parser():
                              'provided all subjects should be analyzed. Multiple '
                              'participants can be specified with a space separated list.',
                         nargs="+")
-   
+
     parser.add_argument('--bids_filter_file', action='store', type=op.abspath,
                         help='a JSON file describing custom BIDS input filters using PyBIDS. '
                              'For further details, please check out http://bids-apps.neuroimaging.io/rsHRF/')
-    
+
     group_mask = parser.add_mutually_exclusive_group(required=False)
 
     group_mask.add_argument('--atlas', action='store', type=op.abspath,
@@ -245,14 +245,14 @@ def run_rsHRF():
         utils.bids.write_derivative_description(args.bids_dir, args.output_dir)
         bids_dir = Path(args.bids_dir)
         fname = bids_dir / 'dataset_description.json'
-        
+
         if fname.exists():
                 desc = json.loads(Path(fname).read_text())
                 if 'DataType' in desc :
                     if desc['DataType'] != 'derivative':
                         parser.error('Input data is not a derivative dataset'
                                      ' (DataType in dataset_description.json is not equal to "derivative")')
-                                       
+
                 else :
                     parser.error('DataType is not defined in the dataset_description.json file. Please make sure DataType is defined. '
                                  'Information on the dataset_description.json file can be found online '
@@ -262,12 +262,12 @@ def run_rsHRF():
             parser.error('Could not find dataset_description.json file. Please make sure the BIDS data '
                          'structure is present and correct. Datasets can be validated online '
                          'using the BIDS Validator (http://incf.github.io/bids-validator/).')
-    
-        
+
+
     if args.bids_dir is not None and args.atlas is not None:
         # carry analysis with bids_dir and 1 atlas
         layout = BIDSLayout(args.bids_dir, validate=False, config =['bids', 'derivatives'])
-        
+
         if args.participant_label:
             input_subjects = args.participant_label
             subjects_to_analyze = layout.get_subjects(subject=input_subjects)
@@ -281,23 +281,23 @@ def run_rsHRF():
 
         if not args.atlas.endswith(('.nii', '.nii.gz')):
             parser.error('--atlas should end with .nii or .nii.gz')
-        
+
         if args.bids_filter_file is not None:
-            filter_list = json.loads(Path(args.bids_filter_file).read_text()) 
-            
-            default_input = {'extension': 'nii.gz', 
-                             'datatype' : 'func', 
-                             'desc': 'preproc', 
+            filter_list = json.loads(Path(args.bids_filter_file).read_text())
+
+            default_input = {'extension': 'nii.gz',
+                             'datatype' : 'func',
+                             'desc': 'preproc',
                              'task' : 'rest',
                              'suffix': 'bold'}
-            default_input['subject']=subjects_to_analyze            
+            default_input['subject']=subjects_to_analyze
             default_input.update(filter_list['bold'])
-            
+
             all_inputs = layout.get(return_type='filename',**default_input)
-        
+
         else :
             all_inputs = layout.get(return_type='filename',datatype='func', subject=subjects_to_analyze, task='rest',desc='preproc',suffix='bold', extension=['nii', 'nii.gz'])
-            
+
         if not all_inputs != []:
             parser.error('There are no files of type *bold.nii / *bold.nii.gz '
                          'Please make sure to have at least one file of the above type '
@@ -343,18 +343,18 @@ def run_rsHRF():
                          'using the BIDS Validator (http://incf.github.io/bids-validator/).')
 
         if args.bids_filter_file is not None:
-            filter_list = json.loads(Path(args.bids_filter_file).read_text()) 
-            
-            default_input = {'extension': 'nii.gz', 
-                             'datatype' : 'func', 
-                             'desc': 'preproc', 
+            filter_list = json.loads(Path(args.bids_filter_file).read_text())
+
+            default_input = {'extension': 'nii.gz',
+                             'datatype' : 'func',
+                             'desc': 'preproc',
                              'task' : 'rest',
                              'suffix': 'bold'}
-            default_input['subject']=subjects_to_analyze            
+            default_input['subject']=subjects_to_analyze
             default_input.update(filter_list['bold'])
-            
+
             all_inputs = layout.get(return_type='filename',**default_input)
-            
+
             default_mask={'extension': 'nii.gz',
                           'datatype': 'func',
                           'desc': 'brain',
@@ -362,14 +362,14 @@ def run_rsHRF():
                           'suffix':'mask'}
             default_mask['subject']=subjects_to_analyze
             default_mask.update(filter_list['mask'])
-            
+
             all_masks = layout.get(return_type='filename',**default_mask)
-            
-            
-        else:            
+
+
+        else:
             all_inputs = layout.get(return_type='filename',datatype='func', subject=subjects_to_analyze, task='rest',desc='preproc',suffix='bold', extension=['nii', 'nii.gz'])
             all_masks = layout.get(return_type='filename', datatype='func', subject=subjects_to_analyze, task='rest',desc='brain',suffix='mask', extension=['nii', 'nii.gz'])
-       
+
         if not all_inputs != []:
             parser.error('There are no files of type *bold.nii / *bold.nii.gz '
                          'Please make sure to have at least one file of the above type '

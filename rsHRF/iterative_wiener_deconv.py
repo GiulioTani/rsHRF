@@ -105,11 +105,11 @@ def rsHRF_iterative_wiener_deconv(y, h,
 
         # ============ GAUSSIAN SMOOTHING ============
         if Smooth > 1:
-            # MATLAB gausswin(N) uses alpha=2.5 by default. 
+            # MATLAB gausswin(N) uses alpha=2.5 by default.
             # Equivalent SciPy std = (N-1)/(2*alpha)
             std_val = (Smooth - 1) / (2 * 2.5)
             g = gaussian(int(Smooth), std=std_val)
-            g = g / np.sum(g) 
+            g = g / np.sum(g)
             xhat_new = convolve(xhat_new, g, mode='same')
 
         # ============ LOW-PASS FILTERING ============

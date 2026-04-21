@@ -12,7 +12,7 @@ class ParameterWindow():
         screen_width  = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()
         self.window.geometry("350x420+%d+%d" % (screen_width*(280.0/1900), (((1040.0-220)/1000)*screen_height)-390))
-        
+
     def updateParameters(self):
         for i in range(len(self.labels)):
             self.parameters[self.labels[i].cget('text')] = self.entries[i].get()
@@ -21,11 +21,11 @@ class ParameterWindow():
 
     def getParameters(self):
         return deepcopy(self.parameters)
-    
+
     def setParameters(self, dic):
-        self.parameters = deepcopy(dic) 
-    
-    def display(self): 
+        self.parameters = deepcopy(dic)
+
+    def display(self):
         # removing existing widgets
         for each in self.labels:
             each.destroy()

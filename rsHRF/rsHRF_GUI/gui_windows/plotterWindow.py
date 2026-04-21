@@ -6,7 +6,7 @@ from matplotlib.figure                 import Figure
 from tkinter                           import ttk, Toplevel, Canvas, TOP, BOTH, BOTTOM
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-class PlotterWindow():  
+class PlotterWindow():
     def __init__(self):
         window = Toplevel()
         window.title("Screen")

@@ -4,7 +4,7 @@ from copy           import deepcopy
 from ...misc.status import Status
 
 class Parameters():
-    """ 
+    """
     rsHRF-Toolbox Parameters
     For more information, visit https://github.com/BIDS-Apps/rsHRF/tree/master/rsHRF
     """
@@ -13,7 +13,7 @@ class Parameters():
         self.estimation          = 'canon2dd'
         self.passband            = [0.01, 0.08]
         self.passband_deconvolve = [0.0, sys.float_info.max]
-        self.TR                  = 2.0 
+        self.TR                  = 2.0
         self.localK              = 1
         self.T                   = 3
         self.T0                  = 1
@@ -22,7 +22,7 @@ class Parameters():
         self.thr                 = 1
         self.order               = 3
         self.volterra            = 0
-        self.len                 = 24      
+        self.len                 = 24
         self.temporal_mask       = []
         self.min_onset_search    = 4
         self.max_onset_search    = 8
@@ -33,75 +33,75 @@ class Parameters():
 
     # getters
     def get_estimation(self):
-        return self.estimation 
-    
+        return self.estimation
+
     def get_passband(self):
         return deepcopy(self.passband)
 
     def get_passband_deconvolve(self):
         return deepcopy(self.passband_deconvolve)
-    
+
     def get_TR(self):
         return self.TR
-    
+
     def get_localK(self):
         return self.localK
-    
+
     def get_T(self):
-        return self.T 
-    
+        return self.T
+
     def get_T0(self):
         return self.get_T0
-    
+
     def get_TD_DD(self):
         # TD_DD is only relevant for canon2dd estimation
         if self.estimation == 'canon2dd':
-            return self.TD_DD 
+            return self.TD_DD
         else:
-            return None 
-    
+            return None
+
     def get_AR_lag(self):
-        return self.get_AR_lag 
-    
+        return self.get_AR_lag
+
     def get_thr(self):
-        return self.thr 
-    
+        return self.thr
+
     def get_order(self):
         # order is only relevant for fourier and gamma estimation
         if 'gamma' in self.get_estimation or 'fourier' in self.get_estimation:
-            return self.order 
+            return self.order
         else:
-            return None 
-    
+            return None
+
     def get_Volterra(self):
         # volterra is only relevant for canon2dd estimation
         if self.get_estimation == 'canon2dd':
             return self.volterra
         else:
-            return None 
-    
+            return None
+
     def get_len(self):
-        return self.len 
-    
+        return self.len
+
     def get_temporal_mask(self):
         return tuple(self.temporal_mask)
-    
+
     def get_min_onset_search(self):
         return self.min_onset_search
-    
+
     def get_max_onset_search(self):
         return self.max_onset_search
-    
+
     # setters
     def set_estimation(self,s):
         self.estimation = s
         return Status(True)
-    
+
     def set_passband(self, l):
-        """ 
-        Takes a list (with two entries) as input and sets the 
+        """
+        Takes a list (with two entries) as input and sets the
             passband-range
-        Checks whether both the values are non-negative 
+        Checks whether both the values are non-negative
         """
         try:
             l = [float(i) for i in l.split(",")]
@@ -112,12 +112,12 @@ class Parameters():
         else:
                 self.passband = deepcopy(l)
                 return Status(True)
-    
+
     def set_passband_deconvolve(self, l):
-        """ 
-        Takes a list (with two entries) as input and sets the 
+        """
+        Takes a list (with two entries) as input and sets the
             passband-range
-        Checks whether both the values are non-negative 
+        Checks whether both the values are non-negative
         """
         try:
             l = [float(i) for i in l.split(",")]
@@ -128,9 +128,9 @@ class Parameters():
         else:
                 self.passband_deconvolve = deepcopy(l)
                 return Status(True)
-    
+
     def set_TR(self, TR):
-        """ 
+        """
         Checks whether the value is postiive
         and updates 'dt' as it is dependent on TR
         """
@@ -145,7 +145,7 @@ class Parameters():
                 self.TR = TR
                 self.update_dt()
                 return Status(True)
-    
+
     def set_localK(self, localK):
         """
         Checks whether the value of localK is positive
@@ -160,7 +160,7 @@ class Parameters():
             else:
                 self.localK = localK
                 return Status(True)
-    
+
     def set_T(self, T):
         """
         Checks whether the value of T >= 1
@@ -172,21 +172,21 @@ class Parameters():
             return Status(False, error="Bad Datatype For T")
         else:
             if T < 1:
-                return Status(False, error="Magnification factor must not be less than 1") 
+                return Status(False, error="Magnification factor must not be less than 1")
             else:
-                self.T = T 
+                self.T = T
                 self.update_dt()
                 return Status(True)
-    
+
     def set_T0(self, T0):
         try:
             T0 = int(T0)
         except:
             return Status(False, error="Bad Datatype For T0")
         else:
-            self.T0 = T0 
+            self.T0 = T0
             return Status(True)
-    
+
     def set_TD_DD(self, TD_DD):
         """
         Sets the value of TD_DD if the estimation is canon2dd
@@ -195,15 +195,15 @@ class Parameters():
             try:
                 TD_DD = int(TD_DD)
             except:
-                return Status(False, error="Magnification factor must not be less than 1") 
+                return Status(False, error="Magnification factor must not be less than 1")
             if TD_DD not in [0,1,2]:
                 return Status(False,error="TD_DD can only take one of these values: 0, 1, 2")
             else:
-                self.TD_DD = TD_DD 
+                self.TD_DD = TD_DD
                 return Status(True)
         else:
             return Status(True)
-    
+
     def set_AR_lag(self, AR_lag):
         """
         Checks whether the AR_lag is non-negative
@@ -216,9 +216,9 @@ class Parameters():
             if AR_lag < 0:
                 return Status(False, error="AR_lag must not be negative")
             else:
-                self.AR_lag = AR_lag 
+                self.AR_lag = AR_lag
                 return Status(True)
-    
+
     def set_thr(self, thr):
         """
         If estimation is FIR or sFIR, thr is a list
@@ -230,7 +230,7 @@ class Parameters():
             except:
                 return Status(False, error="Bad datatype for thr")
             else:
-                self.thr = thr 
+                self.thr = thr
                 return Status(True)
         else:
             try:
@@ -238,9 +238,9 @@ class Parameters():
             except:
                 return Status(False, error="Bad datatype for thr")
             else:
-                self.thr = thr 
+                self.thr = thr
                 return Status(True)
-    
+
     def set_order(self, order):
         """
         Checks whether the order lies between 1 to 60
@@ -258,9 +258,9 @@ class Parameters():
                     status.set_error("Order is too high")
                 return status
             else:
-                self.order = order 
+                self.order = order
                 return Status(True)
-    
+
     def set_Volterra(self, volterra):
         """
         Sets Volterra if the estimation rule is canon2dd
@@ -275,7 +275,7 @@ class Parameters():
                 return Status(True)
         else:
             return Status(True)
-    
+
     def set_len(self, length):
         """
         Checks whether the length of the hemodynamic response function is non-negative
@@ -290,13 +290,13 @@ class Parameters():
                 status.set_error("HRF length must not be postitive")
                 return status
             else:
-                self.len = length 
+                self.len = length
                 return Status(True)
-    
+
     def set_temporal_mask(self, temporal_mask):
         self.temporal_mask = deepcopy(temporal_mask)
         return Status(True)
-    
+
     def set_min_onset_search(self, mos):
         """
         Checks whether the min-onset-search is smaller than max-onset-search
@@ -313,12 +313,12 @@ class Parameters():
                     status.set_error("Min Onset Search must not be greater than Max Onset Search")
                 elif mos < 0:
                     status.set_error("Onset Search values must not be negative")
-                return status 
+                return status
             else:
                 self.min_onset_search = mos
                 self.update_lag()
-                return Status(True) 
-    
+                return Status(True)
+
     def set_max_onset_search(self, mos):
         """
         Checks whether max-onset-search is greater than min-onset-search
@@ -335,7 +335,7 @@ class Parameters():
                     status.set_error("Max Onset Search must not be lesser than Min Onset Search")
                 elif mos < 0:
                     status.set_error("Onset Search values must not be negative")
-                return status 
+                return status
             else:
                 self.max_onset_search = mos
                 self.update_lag()
@@ -345,9 +345,9 @@ class Parameters():
         """
         Re-calculating dt
         """
-        self.dt  = self.TR / self.T 
+        self.dt  = self.TR / self.T
         self.update_lag()
-    
+
     def update_lag(self):
         """
         Re-calculating lag
@@ -355,7 +355,7 @@ class Parameters():
         self.lag = np.arange(np.fix(self.min_onset_search / self.dt),
                     np.fix(self.max_onset_search / self.dt) + 1,
                     dtype='int')
-    
+
     def get_parameters(self):
         """
         Gets all the parameters in the form of a dictionary for rsHRF computation
@@ -365,7 +365,7 @@ class Parameters():
         para['passband']                = deepcopy(self.passband)
         para['passband_deconvolve']     = deepcopy(self.passband_deconvolve)
         para['TR']                      = self.TR
-        para['T']                       = self.T 
+        para['T']                       = self.T
         para['localK']                  = self.localK
         para['T0']                      = self.T0
         para['AR_lag']                  = self.AR_lag
@@ -378,11 +378,11 @@ class Parameters():
             para['TD_DD']               = self.TD_DD
             para['Volterra']            = self.volterra
         elif 'gamma' in self.estimation or 'fourier' in self.estimation:
-            para['order']               = self.order 
-        para['dt']                      = self.dt 
-        para['lag']                     = self.lag 
+            para['order']               = self.order
+        para['dt']                      = self.dt
+        para['lag']                     = self.lag
         return para
-        
+
     def set_parameters(self, dic):
         """
         Takes a dictionary as input and sets all the rsHRF parameters accordingly
@@ -421,22 +421,22 @@ class Parameters():
             elif key == "max_onset_search":
                 out  = self.set_max_onset_search(dic[key])
             if not out.get_state():
-                return out 
+                return out
         return Status(True, info="Parameters Updated Succefully")
-            
+
     def compareParameters(self, p):
         """
-        Takes another parameter object and determines if it is equal 
+        Takes another parameter object and determines if it is equal
         to the this object
         """
         x = self.get_parameters()
         y = p.get_parameters()
         for key in x.keys():
             if key not in y.keys():
-                return False 
+                return False
             elif key == "dt" or key == "lag":
-                continue 
+                continue
             else:
                 if x[key] != y[key]:
-                    return False 
+                    return False
         return True

@@ -8,7 +8,7 @@ from .timeseries                  import TimeSeries
 class HRF(TimeSeries):
     """
     This stores the Hemodynamic Response Function Time-series
-    
+
     Attributes:
         1. BOLD       = stores the associated Preprocessed-BOLD time-series object through which it was retrieved
         2. PARA       = stores the HRF parameters (Full-width at half-max, Time-to-peak and height)
@@ -24,26 +24,26 @@ class HRF(TimeSeries):
         self.BOLD            = TimeSeries()
         self.PARA            = np.array([])
         self.event_bold      = np.array([])
-    
+
     # setters
     def set_para(self, PARA):
-        self.PARA = PARA 
+        self.PARA = PARA
 
     def set_BOLD(self, BOLD):
-        self.BOLD = BOLD 
+        self.BOLD = BOLD
 
     def set_event_bold(self, event_bold):
-        self.event_bold = event_bold 
-    
+        self.event_bold = event_bold
+
     # getters
     def get_event_bold(self):
         return self.event_bold
 
     def get_associated_BOLD(self):
-        return self.BOLD 
+        return self.BOLD
 
     def get_HRF_para(self):
-        return self.PARA 
+        return self.PARA
 
     # misc.
     def compareTimeSeries(self, ts):
@@ -53,10 +53,10 @@ class HRF(TimeSeries):
                 2. rsHRF Parameters
                 3. Preprocessed-BOLD which was used as input
             If all the three comparisions return true, then both the HRF
-                time-series objects are identical 
+                time-series objects are identical
         """
         if self.label == ts.get_label() and self.parameters.compareParameters(ts.get_parameters()) and self.BOLD.compareTimeSeries(ts.get_associated_BOLD()):
-            return True 
+            return True
         else:
             return False
 
@@ -65,11 +65,11 @@ class HRF(TimeSeries):
         try:
             dic = {}
             dic["timeseries"] = self.timeseries
-            dic["PARA"] = self.PARA 
+            dic["PARA"] = self.PARA
             dic["eventBold"] = self.event_bold
             para = self.parameters.get_parameters()
             for each in para.keys():
-                dic[each] = para[each] 
+                dic[each] = para[each]
             savemat(name, dic)
             return True
         except:

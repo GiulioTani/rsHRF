@@ -15,8 +15,8 @@ class VerifyVersionCommand(install):
         tag = os.getenv('CIRCLE_TAG')
         if tag is not None and tag != VERSION:
             info = "Git tag: {0} does not match version: {1}".format(tag, VERSION)
-            sys.exit(info)    
-    
+            sys.exit(info)
+
 setup(
     name="rshrf",
     packages=find_packages(),
