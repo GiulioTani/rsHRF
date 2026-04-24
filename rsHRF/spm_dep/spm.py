@@ -1,10 +1,12 @@
 import math
-import numpy   as np
+import numpy as np
 import nibabel as nib
 from scipy.special import gammaln
 
 import warnings
+
 warnings.filterwarnings("ignore")
+
 
 def spm_vol(input_file):
     """
@@ -19,17 +21,18 @@ def spm_read_vols(mapped_image_volume):
     Read in entire image volumes
     """
     data = mapped_image_volume.get_fdata()
-    data = data.flatten(order='F')
+    data = data.flatten(order="F")
     return data
 
 
-def spm_orth(X, OPT='pad'):
+def spm_orth(X, OPT="pad"):
     """
     Recursive Gram-Schmidt orthogonalisation of basis functions
     @X - matrix
     @OPT - 'norm' - for Euclidean normalisation
            'pad'  - for zero padding of null space (default)
     """
+
     def gs_cofficient(v1, v2):
         return np.dot(v2, v1) / np.dot(v1, v1)
 
@@ -44,8 +47,9 @@ def spm_orth(X, OPT='pad'):
             X = X.T
         Y = X[0:1, :].copy()
         for i in range(1, X.shape[0]):
-            proj = np.diag((X[i, :].dot(Y.T) /
-                            np.linalg.norm(Y, axis=1) ** 2).flat).dot(Y)
+            proj = np.diag(
+                (X[i, :].dot(Y.T) / np.linalg.norm(Y, axis=1) ** 2).flat
+            ).dot(Y)
             Y = np.vstack((Y, X[i, :] - proj.sum(0)))
         if norm:
             Y = np.diag(1 / np.linalg.norm(Y, axis=1)).dot(Y)
@@ -54,9 +58,9 @@ def spm_orth(X, OPT='pad'):
         else:
             return Y.T
 
-    if OPT == 'norm':
+    if OPT == "norm":
         return gs(X, row_vecs=False, norm=True)
-    elif OPT == 'pad':
+    elif OPT == "pad":
         return gs(X, row_vecs=False, norm=False)
     else:
         return X
@@ -81,18 +85,18 @@ def spm_hrf(RT, P=None, fMRI_T=16):
     """
     p = np.array([6, 16, 1, 1, 6, 0, 32], dtype=float)
     if P is not None:
-        p[0:len(P)] = P
-    _spm_Gpdf = lambda x, h, l: \
-        np.exp(h * np.log(l) + (h - 1) * np.log(x) - (l * x) - gammaln(h))
+        p[0 : len(P)] = P
+    _spm_Gpdf = lambda x, h, l: np.exp(
+        h * np.log(l) + (h - 1) * np.log(x) - (l * x) - gammaln(h)
+    )
     # modelled hemodynamic response function - {mixture of Gammas}
     dt = RT / float(fMRI_T)
     u = np.arange(0, int(p[6] / dt + 1)) - p[5] / dt
-    with np.errstate(divide='ignore'):  # Known division-by-zero
-        hrf = _spm_Gpdf(
-            u, p[0] / p[2], dt / p[2]
-        ) - _spm_Gpdf(
-            u, p[1] / p[3], dt / p[3]
-        ) / p[4]
+    with np.errstate(divide="ignore"):  # Known division-by-zero
+        hrf = (
+            _spm_Gpdf(u, p[0] / p[2], dt / p[2])
+            - _spm_Gpdf(u, p[1] / p[3], dt / p[3]) / p[4]
+        )
     idx = np.arange(0, int((p[6] / RT) + 1)) * fMRI_T
     hrf = hrf[idx]
     hrf = np.nan_to_num(hrf)
@@ -118,8 +122,8 @@ def spm_detrend(x, p=0):
         y = []
         return y
 
-    if (not p):
-        y = x - np.ones((m, 1), dtype='int') * x.mean(axis=0)
+    if not p:
+        y = x - np.ones((m, 1), dtype="int") * x.mean(axis=0)
         return y
 
     G = np.zeros((m, p + 1))
@@ -146,11 +150,13 @@ def spm_write_vol(image_volume_info, image_voxels, image_name, file_type):
         image_volume_info = nib.Nifti1Image(data, affine)
         nib.save(image_volume_info, image_name + file_type)
     else:
-        file_type = '.gii'
+        file_type = ".gii"
         data = image_voxels
         gi = nib.GiftiImage()
         # Fix GIFTI datatype issue by explicitly specifying float32
-        data_array = nib.gifti.GiftiDataArray(image_voxels.astype(np.float32), datatype='float32')
+        data_array = nib.gifti.GiftiDataArray(
+            image_voxels.astype(np.float32), datatype="float32"
+        )
         gi.add_gifti_data_array(data_array)
         # Use standard nibabel save function instead of deprecated giftiio.write
         nib.save(gi, image_name + file_type)

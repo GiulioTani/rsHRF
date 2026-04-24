@@ -1,6 +1,7 @@
 import numpy as np
 
-class Subject():
+
+class Subject:
     """
     Stores the information corresponding to a particular subject.
 
@@ -13,12 +14,13 @@ class Subject():
 
         -> All the attributes from 2-5, are arrays of TimeSeries objects
     """
+
     def __init__(self, index):
-        self.index          = index
-        self.BOLD_raw       = []
-        self.BOLD_pre       = []
-        self.BOLD_deconv    = []
-        self.HRF            = []
+        self.index = index
+        self.BOLD_raw = []
+        self.BOLD_pre = []
+        self.BOLD_deconv = []
+        self.HRF = []
 
     # getters
     def get_input_filename(self):
@@ -58,55 +60,59 @@ class Subject():
 
     # misc.
     def is_present(self, label, misc, getts=False):
-        """ Checks whether a time-series is already present
-            Misc takes in all the relevant information which determines the uniqueness
-                of a time-series
-            If getts = True, the function returns the time-series object if it is present """
+        """Checks whether a time-series is already present
+        Misc takes in all the relevant information which determines the uniqueness
+            of a time-series
+        If getts = True, the function returns the time-series object if it is present"""
         if label == "BOLD":
             # Looking for Raw BOLD Data
             for each in self.BOLD_raw:
                 # Determines whether the Raw BOLD data is already present
                 # Checks for the input-file
                 if misc == each.get_inputfile():
-                    if getts :
+                    if getts:
                         return each
                     return True
         elif label == "Preprocessed-BOLD":
             # Looking for Preprocessed BOLD Data
-            para     = misc[0]
-            mask     = misc[1]
-            bold     = misc[2]
+            para = misc[0]
+            mask = misc[1]
+            bold = misc[2]
             for each in self.BOLD_pre:
                 # Determines whether Preprocessed BOLD data is already present
                 # Checks the parameters, mask-file and RAW Bold
-                if para.compareParameters(each.get_parameters()) \
-                    and each.get_maskfile() == misc[1] \
-                    and bold.compareTimeSeries(each.get_BOLD_Raw()):
+                if (
+                    para.compareParameters(each.get_parameters())
+                    and each.get_maskfile() == misc[1]
+                    and bold.compareTimeSeries(each.get_BOLD_Raw())
+                ):
                     if getts:
                         return each
                     return True
         elif label == "HRF":
             # Looking for HRF Data
-            para     = misc[0]
+            para = misc[0]
             BOLD_pre = misc[1]
             for each in self.HRF:
                 # Determines whether the HRF is already present
                 # Checks the parameters and Preprocessed BOLD
-                if para.compareParameters(each.get_parameters()) \
-                    and BOLD_pre.compareTimeSeries(each.get_associated_BOLD()):
+                if para.compareParameters(
+                    each.get_parameters()
+                ) and BOLD_pre.compareTimeSeries(each.get_associated_BOLD()):
                     if getts:
                         return each
                     return True
         elif label == "Deconvolved-BOLD":
             # Looking for Deconvolved BOLD Data
             para = misc[0]
-            HRF  = misc[1]
+            HRF = misc[1]
             for each in self.BOLD_deconv:
                 # Determines whether the Deconvolved BOLD is already present
                 # Checks the associated HRF
-                if para.compareParameters(each.get_parameters()) \
-                    and HRF.compareTimeSeries(each.get_associated_HRF()):
-                    if getts :
+                if para.compareParameters(
+                    each.get_parameters()
+                ) and HRF.compareTimeSeries(each.get_associated_HRF()):
+                    if getts:
                         return each
                     return True
         return False
@@ -116,23 +122,23 @@ class Subject():
         Takes the time-series as input and returns its position in the array
         """
         label = ts.get_label()
-        if label    == "BOLD":
-            arr     = self.BOLD_raw
-        elif label  == "Preprocessed-BOLD":
-            arr     = self.BOLD_pre
-        elif label  == "Deconvolved-BOLD":
-            arr     = self.BOLD_deconv
-        elif label  == "HRF":
-            arr     = self.HRF
-        else :
-            arr     = []
+        if label == "BOLD":
+            arr = self.BOLD_raw
+        elif label == "Preprocessed-BOLD":
+            arr = self.BOLD_pre
+        elif label == "Deconvolved-BOLD":
+            arr = self.BOLD_deconv
+        elif label == "HRF":
+            arr = self.HRF
+        else:
+            arr = []
         for i in range(len(arr)):
             if ts.compareTimeSeries(arr[i]):
                 return str(i)
         return None
 
     def get_time_series_by_index(self, ts_type, index):
-        """ Takes the index of a time-series and returns the time-series """
+        """Takes the index of a time-series and returns the time-series"""
         if ts_type == "BOLD":
             arr = self.BOLD_raw
         elif ts_type == "Preprocessed-BOLD":
@@ -152,13 +158,20 @@ class Subject():
         """
         out = []
         for i in range(len(self.BOLD_raw)):
-            out.append((self.index+"_BOLD_"+str(i),self.BOLD_raw[i].get_ts()))
+            out.append((self.index + "_BOLD_" + str(i), self.BOLD_raw[i].get_ts()))
         for i in range(len(self.BOLD_pre)):
-            out.append((self.index+"_Preprocessed-BOLD_"+str(i),self.BOLD_pre[i].get_ts()))
+            out.append(
+                (self.index + "_Preprocessed-BOLD_" + str(i), self.BOLD_pre[i].get_ts())
+            )
         for i in range(len(self.BOLD_deconv)):
-            out.append((self.index+"_Deconvolved-BOLD_"+str(i),self.BOLD_deconv[i].get_ts()))
+            out.append(
+                (
+                    self.index + "_Deconvolved-BOLD_" + str(i),
+                    self.BOLD_deconv[i].get_ts(),
+                )
+            )
         for i in range(len(self.HRF)):
-            out.append((self.index+"_HRF_"+str(i),self.HRF[i].get_ts()))
+            out.append((self.index + "_HRF_" + str(i), self.HRF[i].get_ts()))
         return out
 
     def get_data_labels(self):
@@ -167,14 +180,11 @@ class Subject():
         """
         out = []
         for i in range(len(self.BOLD_raw)):
-            out.append(self.index+"_BOLD_"+str(i))
+            out.append(self.index + "_BOLD_" + str(i))
         for i in range(len(self.BOLD_pre)):
-            out.append(self.index+"_Preprocessed-BOLD_"+str(i))
+            out.append(self.index + "_Preprocessed-BOLD_" + str(i))
         for i in range(len(self.BOLD_deconv)):
-            out.append(self.index+"_Deconvolved-BOLD_"+str(i))
+            out.append(self.index + "_Deconvolved-BOLD_" + str(i))
         for i in range(len(self.HRF)):
-            out.append(self.index+"_HRF_"+str(i))
+            out.append(self.index + "_HRF_" + str(i))
         return out
-
-
-

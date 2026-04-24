@@ -3,15 +3,17 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+
 def knee_pt(y):
     res_x, _id = knee_pt_helper(y)
     _idm = np.argmin(y)
-    ratio = np.abs(y[_id]-y[_idm])/np.abs(np.max(y) - np.min(y))
+    ratio = np.abs(y[_id] - y[_idm]) / np.abs(np.max(y) - np.min(y))
     if ratio > 0.5:
         idx_of_result = _idm
     else:
         idx_of_result = _id
     return res_x, idx_of_result
+
 
 def knee_pt_helper(y, x=None):
     x_was_none = False
@@ -20,21 +22,21 @@ def knee_pt_helper(y, x=None):
     idx_of_result = np.nan
 
     if type(y) is not np.ndarray:
-        print('knee_pt: y must be a numpy 1D vector')
+        print("knee_pt: y must be a numpy 1D vector")
         return res_x, idx_of_result
     else:
         if y.ndim >= 2:
-            print('knee_pt: y must be 1 dimensional')
+            print("knee_pt: y must be 1 dimensional")
             return res_x, idx_of_result
         if np.size(y) == 0:
-            print('knee_pt: y can not be an empty vector')
+            print("knee_pt: y can not be an empty vector")
             return res_x, idx_of_result
         else:
             if x is None:
                 x_was_none = True
                 x = np.arange(1, np.amax(y.shape) + 1, dtype=int)
             if x.shape != y.shape:
-                print('knee_pt: y and x must have the same dimensions')
+                print("knee_pt: y and x must have the same dimensions")
                 return res_x, idx_of_result
             if y.size < 3:
                 res_x, idx_of_result = np.min(y), np.argmin(y)
@@ -51,10 +53,10 @@ def knee_pt_helper(y, x=None):
             sigma_xx = np.cumsum(np.multiply(x, x), axis=0)
             n = np.arange(1, np.amax(y.shape) + 1).conj().T
             det = np.multiply(n, sigma_xx) - np.multiply(sigma_x, sigma_x)
-            mfwd = (np.multiply(n, sigma_xy) -
-                    np.multiply(sigma_x, sigma_y)) / det
-            bfwd = -1 * ((np.multiply(sigma_x, sigma_xy) -
-                          np.multiply(sigma_xx, sigma_y)) / det)
+            mfwd = (np.multiply(n, sigma_xy) - np.multiply(sigma_x, sigma_y)) / det
+            bfwd = -1 * (
+                (np.multiply(sigma_x, sigma_xy) - np.multiply(sigma_xx, sigma_y)) / det
+            )
 
             sigma_xy = np.cumsum(np.multiply(x[::-1], y[::-1]), axis=0)
             sigma_x = np.cumsum(x[::-1], axis=0)
@@ -62,25 +64,33 @@ def knee_pt_helper(y, x=None):
             sigma_xx = np.cumsum(np.multiply(x[::-1], x[::-1]), axis=0)
             n = np.arange(1, np.amax(y.shape) + 1).conj().T
             det = np.multiply(n, sigma_xx) - np.multiply(sigma_x, sigma_x)
-            mbck = ((np.multiply(n, sigma_xy) -
-                     np.multiply(sigma_x, sigma_y)) / det)[::-1]
-            bbck = (-1 *
-                    ((np.multiply(sigma_x, sigma_xy) -
-                      np.multiply(sigma_xx, sigma_y)) / det))[::-1]
+            mbck = ((np.multiply(n, sigma_xy) - np.multiply(sigma_x, sigma_y)) / det)[
+                ::-1
+            ]
+            bbck = (
+                -1
+                * (
+                    (np.multiply(sigma_x, sigma_xy) - np.multiply(sigma_xx, sigma_y))
+                    / det
+                )
+            )[::-1]
 
             error_curve = np.full(y.shape, np.nan)
             for breakpt in range(1, np.amax((y - 1).shape)):
-                delsfwd = (np.multiply(mfwd[breakpt], x[0:breakpt + 1]) +
-                           bfwd[breakpt]) - y[0:breakpt + 1]
-                delsbck = (np.multiply(mbck[breakpt], x[breakpt:]) +
-                           bbck[breakpt]) - y[breakpt:]
+                delsfwd = (
+                    np.multiply(mfwd[breakpt], x[0 : breakpt + 1]) + bfwd[breakpt]
+                ) - y[0 : breakpt + 1]
+                delsbck = (np.multiply(mbck[breakpt], x[breakpt:]) + bbck[breakpt]) - y[
+                    breakpt:
+                ]
                 if use_absolute_dev_p:
-                    error_curve[breakpt] = \
-                        np.sum(np.abs(delsfwd)) + np.sum(np.abs(delsbck))
+                    error_curve[breakpt] = np.sum(np.abs(delsfwd)) + np.sum(
+                        np.abs(delsbck)
+                    )
                 else:
-                    error_curve[breakpt] = \
-                        np.sqrt(np.sum(np.multiply(delsfwd, delsfwd))) + \
-                        np.sqrt(np.sum(np.multiply(delsbck, delsbck)))
+                    error_curve[breakpt] = np.sqrt(
+                        np.sum(np.multiply(delsfwd, delsfwd))
+                    ) + np.sqrt(np.sum(np.multiply(delsbck, delsbck)))
             try:
                 loc = np.nanargmin(error_curve)
             except ValueError as e:

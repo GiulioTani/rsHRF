@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from ..processing import rest_filter
 
+
 def test_conn_filter():
     TR = np.random.randint(1, 10)
     filter = [0.01, 0.08]
@@ -13,6 +14,7 @@ def test_conn_filter():
     x = np.ones((152, 1))
     y = rest_filter.conn_filter(TR, filter, x)
     assert np.allclose(y, np.zeros((152, 1)))
+
 
 def test_rest_IdealFilter():
     TR = 2.0

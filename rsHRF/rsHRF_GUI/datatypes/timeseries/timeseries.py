@@ -3,7 +3,8 @@ from copy import deepcopy
 
 from ...datatypes.misc.parameters import Parameters
 
-class TimeSeries():
+
+class TimeSeries:
     """
     Deals with all the time-series artifacts that appear during the processing.
 
@@ -20,26 +21,27 @@ class TimeSeries():
         4. shape         : shape of the time-series (voxels x time-slices)
         5. parameters    : rsHRF-parameters associated in retrieving this time-series
     """
-    def __init__(self, label="",subject_index="",ts=np.array([]), para=Parameters()):
-        self.label          = label
-        self.subject_index  = subject_index
-        self.timeseries     = deepcopy(ts)
-        self.shape          = ts.shape
-        self.parameters     = deepcopy(para)
+
+    def __init__(self, label="", subject_index="", ts=np.array([]), para=Parameters()):
+        self.label = label
+        self.subject_index = subject_index
+        self.timeseries = deepcopy(ts)
+        self.shape = ts.shape
+        self.parameters = deepcopy(para)
 
     # setters
     def set_ts(self, ts):
-        self.timeseries     = deepcopy(ts)
-        self.shape          = self.timeseries.shape
+        self.timeseries = deepcopy(ts)
+        self.shape = self.timeseries.shape
 
-    def set_parameters(self,para):
-        self.parameters     = deepcopy(para)
+    def set_parameters(self, para):
+        self.parameters = deepcopy(para)
 
-    def set_label(self,label):
-        self.label          = label
+    def set_label(self, label):
+        self.label = label
 
-    def set_subject_index(self,subject_index):
-        self.subject_index  = subject_index
+    def set_subject_index(self, subject_index):
+        self.subject_index = subject_index
 
     # getters
     def get_ts(self):
@@ -59,19 +61,18 @@ class TimeSeries():
 
     # misc.
     def get_info(self):
-        """ Returns the information about the time-series in the form of a dictionary """
-        dic                      = {}
-        dic["Type"]              = self.label
-        dic["Subject"]           = self.subject_index
+        """Returns the information about the time-series in the form of a dictionary"""
+        dic = {}
+        dic["Type"] = self.label
+        dic["Subject"] = self.subject_index
         dic["Time Series Shape"] = self.shape
-        dic["Parameters"]        = self.parameters.get_parameters()
+        dic["Parameters"] = self.parameters.get_parameters()
         return dic
 
     def compareTimeSeries(self, ts):
-        """ Compares another time-series with itself to determine if both are identical """
+        """Compares another time-series with itself to determine if both are identical"""
         raise NotImplementedError("This needs to be overridden in the child-classes")
 
     def save_info(self, name):
-        """ Saves the information about the time-series in a .mat file """
+        """Saves the information about the time-series in a .mat file"""
         raise NotImplementedError("This needs to be overridden in the child-classes")
-

@@ -9,18 +9,21 @@ with open("rsHRF/VERSION", "r") as fh:
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+
 class VerifyVersionCommand(install):
-    description = 'verify that the git tag matches our version'
+    description = "verify that the git tag matches our version"
+
     def run(self):
-        tag = os.getenv('CIRCLE_TAG')
+        tag = os.getenv("CIRCLE_TAG")
         if tag is not None and tag != VERSION:
             info = "Git tag: {0} does not match version: {1}".format(tag, VERSION)
             sys.exit(info)
 
+
 setup(
     name="rshrf",
     packages=find_packages(),
-    entry_points={"console_scripts": ['rsHRF = rsHRF.CLI:main']},
+    entry_points={"console_scripts": ["rsHRF = rsHRF.CLI:main"]},
     version=VERSION,
     description="BIDs App to retrieve the haemodynamic response function from resting state fMRI data",
     license="MIT",
@@ -37,6 +40,18 @@ setup(
     include_package_data=True,
     zip_safe=False,
     python_requires=">=3.6",
-    install_requires=["numpy", "nibabel", "matplotlib", "scipy", "pybids==0.11.1", "pandas", "patsy", "mpld3", "duecredit", "joblib", "PyWavelets"],
-    cmdclass={'verify': VerifyVersionCommand},
+    install_requires=[
+        "numpy",
+        "nibabel",
+        "matplotlib",
+        "scipy",
+        "pybids==0.11.1",
+        "pandas",
+        "patsy",
+        "mpld3",
+        "duecredit",
+        "joblib",
+        "PyWavelets",
+    ],
+    cmdclass={"verify": VerifyVersionCommand},
 )
