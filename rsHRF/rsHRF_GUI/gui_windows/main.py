@@ -13,7 +13,7 @@ from ..core.core import Core
 
 
 class Main:
-    def __init__(self):
+    def __init__(self, parameters=None):
         # main window
         root = Tk()
         root.title("rsHRF Toolbox")
@@ -46,7 +46,9 @@ class Main:
         input = ()  # receives the input from the input window
         output = {}  # receives the output from the core
         # initializing parameter window
-        parameter_window.setParameters(core.get_parameters())
+        parameter_window.setParameters(
+            parameters if parameters is not None else core.get_parameters()
+        )
         parameter_window.display()
 
         """ Gets the input from the input toplevel.

@@ -336,7 +336,7 @@ def run_rsHRF():
         try:
             from .rsHRF_GUI import run
 
-            run.run()
+            run.run(para)
         except ModuleNotFoundError:
             parser.error("--GUI should not be used inside a Docker container")
     else:
