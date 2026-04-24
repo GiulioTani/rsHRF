@@ -69,7 +69,7 @@ def get_parser():
         "--GUI",
         action="store_const",
         const="GUI",
-        dest="input",
+        dest="bids_dir",
         help="[DEPRECATED] to execute the toolbox in GUI mode, use 'GUI' as"
         "input file positional argument and specify --no-bids.",
     )
@@ -147,7 +147,7 @@ def get_parser():
         "-m",
         "--mask",
         action="store",
-        type=op.abspath,
+        type=str,
         help="the absolute path to a single mask file, which should be of the same "
         "type as the input file (NIfTI or GIfTI). Use 'BIDS' to enable the use of "
         "mask files present in the BIDS directory itself.",
@@ -349,11 +349,6 @@ def run_rsHRF():
                 "--output_dir must be a valid directory path that already exists."
             )
 
-        if args.estimation is None:
-            parser.error(
-                "--estimation rule is required when executing in command-line interface"
-            )
-
         if not op.exists(args.bids_dir):
             parser.error(
                 "The input path provided does not exist, please provide a valid path."
@@ -391,13 +386,6 @@ def run_rsHRF():
                 "Warning: No brainmask can be applied with text input, ignoring it.",
                 file=sys.stderr,
             )
-        if args.mask is not None and not (
-            args.mask == "BIDS"
-            or args.mask.endswith((".nii", ".nii.gz", ".gii", ".gii.gz"))
-        ):
-            parser.error(
-                "The mask file should be of the same type as the input file (NIfTI or GIfTI)"
-            )
         if input_type == "4Dimage" and args.mask is not None:
             if args.mask == "BIDS":
                 print(
@@ -411,6 +399,17 @@ def run_rsHRF():
                 parser.error(
                     "The mask file should be of the same type as the input file (NIfTI or GIfTI)"
                 )
+
+        if args.mask is not None:
+            if args.mask == "BIDS":
+                if not input_type == "BIDS":
+                    parser.error("BIDS mask is allowed only with BIDS input.")
+            else:
+                args.mask = op.abspath(args.mask)
+                if not args.mask.endswith((".nii", ".nii.gz", ".gii", ".gii.gz")):
+                    parser.error(
+                        "The mask file should be of the same type as the input file (NIfTI or GIfTI)"
+                    )
 
         if args.temporal_mask is not None:
             try:
@@ -426,264 +425,268 @@ def run_rsHRF():
         if args.estimation == "sFIR" or args.estimation == "FIR":
             para["T"] = 1
 
-        if para["TR"] <= 0:
-            if input_type == "text":
-                parser.error("Please supply a valid TR using -TR argument")
-            elif input_type == "4Dimage":
-                if ".nii" in args.bids_dir:
-                    TR = (spm_dep.spm.spm_vol(args.bids_dir).header.get_zooms())[-1]
-                else:
+        if input_type != "BIDS":
+            if para["TR"] <= 0:
+                if input_type == "text":
                     parser.error("Please supply a valid TR using -TR argument")
-                if TR <= 0:
-                    parser.error("Please supply a valid TR using -TR argument")
+                elif input_type == "4Dimage":
+                    if ".nii" in args.bids_dir:
+                        TR = (spm_dep.spm.spm_vol(args.bids_dir).header.get_zooms())[-1]
+                    else:
+                        parser.error("Please supply a valid TR using -TR argument")
+                    if TR <= 0:
+                        parser.error("Please supply a valid TR using -TR argument")
+                    else:
+                        print(
+                            "Invalid or no TR supplied, using implicit TR: {0}".format(
+                                TR
+                            ),
+                            file=sys.stderr,
+                        )
+                        para["TR"] = TR
                 else:
-                    print(
-                        "Invalid or no TR supplied, using implicit TR: {0}".format(TR),
-                        file=sys.stderr,
+                    parser.error(
+                        "Explicit TR value is ignored when input is BIDS, as TR will be "
+                        "read from the metadata of the input files."
                     )
-                    para["TR"] = TR
-            else:
-                parser.error(
-                    "Explicit TR value is ignored when input is BIDS, as TR will be "
-                    "read from the metadata of the input files."
+            para["dt"] = para["TR"] / para["T"]
+            para["lag"] = np.arange(
+                np.trunc(para["min_onset_search"] / para["dt"]),
+                np.trunc(para["max_onset_search"] / para["dt"]) + 1,
+                dtype="int",
+            )
+
+            if input_type == "text":
+                file_type = op.splitext(args.bids_dir)[-1]
+                fourD_rsHRF.demo_rsHRF(
+                    args.bids_dir,
+                    None,
+                    args.output_dir,
+                    para,
+                    args.n_jobs,
+                    file_type,
+                    mode="time-series",
+                    temporal_mask=temporal_mask,
+                    wiener=args.wiener,
                 )
 
-            if input_type != "BIDS":
+            else:
+                # carry analysis with input_file and atlas
+                file_type = op.splitext(args.bids_dir)
+                if file_type[-1] == ".gz":
+                    file_type = op.splitext(file_type[-2])[-1] + file_type[-1]
+                else:
+                    file_type = file_type[-1]
+
+                fourD_rsHRF.demo_rsHRF(
+                    args.bids_dir,
+                    args.mask,
+                    args.output_dir,
+                    para,
+                    args.n_jobs,
+                    file_type,
+                    mode="input",
+                    temporal_mask=temporal_mask,
+                    wiener=args.wiener,
+                )
+
+        else:
+            utils.bids.write_derivative_description(args.bids_dir, args.output_dir)
+            bids_dir = Path(args.bids_dir)
+            fname = bids_dir / "dataset_description.json"
+
+            if fname.exists():
+                desc = json.loads(Path(fname).read_text())
+                if "DataType" in desc:
+                    if desc["DataType"] != "derivative":
+                        parser.error(
+                            "Input data is not a derivative dataset"
+                            ' (DataType in dataset_description.json is not equal to "derivative")'
+                        )
+
+                else:
+                    parser.error(
+                        "DataType is not defined in the dataset_description.json file. Please make sure DataType is defined. "
+                        "Information on the dataset_description.json file can be found online "
+                        "(https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html"
+                        "#derived-dataset-and-pipeline-description)"
+                    )
+            else:
+                parser.error(
+                    "Could not find dataset_description.json file. Please make sure the BIDS data "
+                    "structure is present and correct. Datasets can be validated online "
+                    "using the BIDS Validator (http://incf.github.io/bids-validator/)."
+                )
+
+            layout = BIDSLayout(
+                args.bids_dir, validate=False, config=["bids", "derivatives"]
+            )
+
+            if args.participant_label:
+                input_subjects = args.participant_label
+                subjects_to_analyze = layout.get_subjects(subject=input_subjects)
+            else:
+                subjects_to_analyze = layout.get_subjects()
+
+            if not subjects_to_analyze:
+                parser.error(
+                    "Could not find participants. Please make sure the BIDS data "
+                    "structure is present and correct. Datasets can be validated online "
+                    "using the BIDS Validator (http://incf.github.io/bids-validator/)."
+                )
+
+            if (
+                args.mask is not None
+                and args.mask != "BIDS"
+                and not args.mask.endswith((".nii", ".nii.gz"))
+            ):
+                parser.error("Mask for BIDS input should end with .nii or .nii.gz")
+
+            if args.bids_filter_file is not None:
+                filter_list = json.loads(Path(args.bids_filter_file).read_text())
+
+                default_input = {
+                    "extension": "nii.gz",
+                    "datatype": "func",
+                    "desc": "preproc",
+                    "task": "rest",
+                    "suffix": "bold",
+                }
+                default_input["subject"] = subjects_to_analyze
+                default_input.update(filter_list["bold"])
+
+                all_inputs = layout.get(return_type="filename", **default_input)
+
+                if args.mask == "BIDS":
+                    default_mask = {
+                        "extension": "nii.gz",
+                        "datatype": "func",
+                        "desc": "brain",
+                        "task": "rest",
+                        "suffix": "mask",
+                    }
+                    default_mask["subject"] = subjects_to_analyze
+                    default_mask.update(filter_list["mask"])
+
+                    all_masks = layout.get(return_type="filename", **default_mask)
+
+            else:
+                all_inputs = layout.get(
+                    return_type="filename",
+                    datatype="func",
+                    subject=subjects_to_analyze,
+                    task="rest",
+                    desc="preproc",
+                    suffix="bold",
+                    extension=["nii", "nii.gz"],
+                )
+                if args.mask == "BIDS":
+                    all_masks = layout.get(
+                        return_type="filename",
+                        datatype="func",
+                        subject=subjects_to_analyze,
+                        task="rest",
+                        desc="brain",
+                        suffix="mask",
+                        extension=["nii", "nii.gz"],
+                    )
+
+            if not all_inputs != []:
+                parser.error(
+                    "There are no files of type *bold.nii / *bold.nii.gz "
+                    "Please make sure to have at least one file of the above type "
+                    "in the BIDS specification"
+                )
+            all_inputs.sort()
+
+            if args.mask == "BIDS":
+                if not all_masks != []:
+                    parser.error(
+                        "There are no files of type *mask.nii / *mask.nii.gz "
+                        "Please make sure to have at least one file of the above type "
+                        "in the BIDS specification"
+                    )
+                if len(all_inputs) != len(all_masks):
+                    parser.error(
+                        "The number of *bold.nii / .nii.gz and the number of "
+                        "*mask.nii / .nii.gz are different. Please make sure that "
+                        "there is one mask for each input_file present"
+                    )
+
+                all_masks.sort()
+
+                all_prefix_match = False
+
+                prefix_match_count = 0
+                for i in range(len(all_inputs)):
+                    input_prefix = all_inputs[i].split("/")[-1].split("_desc")[0]
+                    mask_prefix = all_masks[i].split("/")[-1].split("_desc")[0]
+                    if input_prefix == mask_prefix:
+                        prefix_match_count += 1
+                    else:
+                        all_prefix_match = False
+                        break
+                if prefix_match_count == len(all_inputs):
+                    all_prefix_match = True
+
+                if not all_prefix_match:
+                    parser.error(
+                        "The mask and input files should have the same prefix for correspondence. "
+                        "Please consider renaming your files"
+                    )
+
+            num_errors = 0
+            for file_count in range(len(all_inputs)):
+                file_type = all_inputs[file_count].split("bold")[1]
+                if file_type == ".nii" or file_type == ".nii.gz":
+                    try:
+                        TR = layout.get_metadata(all_inputs[file_count])[
+                            "RepetitionTime"
+                        ]
+                    except KeyError as e:
+                        TR = spm_dep.spm.spm_vol(
+                            all_inputs[file_count]
+                        ).header.get_zooms()[-1]
+                    para["TR"] = TR
+                else:
+                    spm_dep.spm.spm_vol(all_inputs[file_count])
+                    TR = (
+                        spm_dep.spm.spm_vol(all_inputs[file_count])
+                        .get_arrays_from_intent("NIFTI_INTENT_TIME_SERIES")[0]
+                        .meta.get_metadata()["TimeStep"]
+                    )
+                    para["TR"] = float(TR) * 0.001
+
                 para["dt"] = para["TR"] / para["T"]
                 para["lag"] = np.arange(
                     np.trunc(para["min_onset_search"] / para["dt"]),
                     np.trunc(para["max_onset_search"] / para["dt"]) + 1,
                     dtype="int",
                 )
-
-                if input_type == "text":
-                    file_type = op.splitext(args.ts)[-1]
-
+                num_errors += 1
+                try:
                     fourD_rsHRF.demo_rsHRF(
-                        args.ts,
-                        None,
+                        all_inputs[file_count],
+                        all_masks[file_count] if args.mask == "BIDS" else args.mask,
                         args.output_dir,
                         para,
                         args.n_jobs,
                         file_type,
-                        mode="time-series",
+                        mode="bids" + (" w/ atlas" if args.mask != "BIDS" else ""),
                         temporal_mask=temporal_mask,
                         wiener=args.wiener,
                     )
-
-                else:
-                    # carry analysis with input_file and atlas
-                    file_type = op.splitext(args.bids_dir)
-                    if file_type[-1] == ".gz":
-                        file_type = op.splitext(file_type[-2])[-1] + file_type[-1]
-                    else:
-                        file_type = file_type[-1]
-
-                    fourD_rsHRF.demo_rsHRF(
-                        args.bids_dir,
-                        args.atlas,
-                        args.output_dir,
-                        para,
-                        args.n_jobs,
-                        file_type,
-                        mode="input",
-                        temporal_mask=temporal_mask,
-                        wiener=args.wiener,
-                    )
-
-            else:
-                utils.bids.write_derivative_description(args.bids_dir, args.output_dir)
-                bids_dir = Path(args.bids_dir)
-                fname = bids_dir / "dataset_description.json"
-
-                if fname.exists():
-                    desc = json.loads(Path(fname).read_text())
-                    if "DataType" in desc:
-                        if desc["DataType"] != "derivative":
-                            parser.error(
-                                "Input data is not a derivative dataset"
-                                ' (DataType in dataset_description.json is not equal to "derivative")'
-                            )
-
-                    else:
-                        parser.error(
-                            "DataType is not defined in the dataset_description.json file. Please make sure DataType is defined. "
-                            "Information on the dataset_description.json file can be found online "
-                            "(https://bids-specification.readthedocs.io/en/stable/03-modality-agnostic-files.html"
-                            "#derived-dataset-and-pipeline-description)"
-                        )
-                else:
-                    parser.error(
-                        "Could not find dataset_description.json file. Please make sure the BIDS data "
-                        "structure is present and correct. Datasets can be validated online "
-                        "using the BIDS Validator (http://incf.github.io/bids-validator/)."
-                    )
-
-                layout = BIDSLayout(
-                    args.bids_dir, validate=False, config=["bids", "derivatives"]
+                    num_errors -= 1
+                except ValueError as err:
+                    print(err.args[0])
+                except:
+                    print("Unexpected error:", sys.exc_info()[0])
+            success = len(all_inputs) - num_errors
+            if success == 0:
+                raise RuntimeError(
+                    "Dimensions were inconsistent for all input-mask pairs; \n"
+                    "No inputs were processed!"
                 )
-
-                if args.participant_label:
-                    input_subjects = args.participant_label
-                    subjects_to_analyze = layout.get_subjects(subject=input_subjects)
-                else:
-                    subjects_to_analyze = layout.get_subjects()
-
-                if not subjects_to_analyze:
-                    parser.error(
-                        "Could not find participants. Please make sure the BIDS data "
-                        "structure is present and correct. Datasets can be validated online "
-                        "using the BIDS Validator (http://incf.github.io/bids-validator/)."
-                    )
-
-                if args.mask != "BIDS" and not args.atlas.endswith((".nii", ".nii.gz")):
-                    parser.error("Mask for BIDS input should end with .nii or .nii.gz")
-
-                if args.bids_filter_file is not None:
-                    filter_list = json.loads(Path(args.bids_filter_file).read_text())
-
-                    default_input = {
-                        "extension": "nii.gz",
-                        "datatype": "func",
-                        "desc": "preproc",
-                        "task": "rest",
-                        "suffix": "bold",
-                    }
-                    default_input["subject"] = subjects_to_analyze
-                    default_input.update(filter_list["bold"])
-
-                    all_inputs = layout.get(return_type="filename", **default_input)
-
-                    if args.mask == "BIDS":
-                        default_mask = {
-                            "extension": "nii.gz",
-                            "datatype": "func",
-                            "desc": "brain",
-                            "task": "rest",
-                            "suffix": "mask",
-                        }
-                        default_mask["subject"] = subjects_to_analyze
-                        default_mask.update(filter_list["mask"])
-
-                        all_masks = layout.get(return_type="filename", **default_mask)
-
-                else:
-                    all_inputs = layout.get(
-                        return_type="filename",
-                        datatype="func",
-                        subject=subjects_to_analyze,
-                        task="rest",
-                        desc="preproc",
-                        suffix="bold",
-                        extension=["nii", "nii.gz"],
-                    )
-                    if args.mask == "BIDS":
-                        all_masks = layout.get(
-                            return_type="filename",
-                            datatype="func",
-                            subject=subjects_to_analyze,
-                            task="rest",
-                            desc="brain",
-                            suffix="mask",
-                            extension=["nii", "nii.gz"],
-                        )
-
-                if not all_inputs != []:
-                    parser.error(
-                        "There are no files of type *bold.nii / *bold.nii.gz "
-                        "Please make sure to have at least one file of the above type "
-                        "in the BIDS specification"
-                    )
-                all_inputs.sort()
-
-                if args.mask == "BIDS":
-                    if not all_masks != []:
-                        parser.error(
-                            "There are no files of type *mask.nii / *mask.nii.gz "
-                            "Please make sure to have at least one file of the above type "
-                            "in the BIDS specification"
-                        )
-                    if len(all_inputs) != len(all_masks):
-                        parser.error(
-                            "The number of *bold.nii / .nii.gz and the number of "
-                            "*mask.nii / .nii.gz are different. Please make sure that "
-                            "there is one mask for each input_file present"
-                        )
-
-                    all_masks.sort()
-
-                    all_prefix_match = False
-
-                    prefix_match_count = 0
-                    for i in range(len(all_inputs)):
-                        input_prefix = all_inputs[i].split("/")[-1].split("_desc")[0]
-                        mask_prefix = all_masks[i].split("/")[-1].split("_desc")[0]
-                        if input_prefix == mask_prefix:
-                            prefix_match_count += 1
-                        else:
-                            all_prefix_match = False
-                            break
-                    if prefix_match_count == len(all_inputs):
-                        all_prefix_match = True
-
-                    if not all_prefix_match:
-                        parser.error(
-                            "The mask and input files should have the same prefix for correspondence. "
-                            "Please consider renaming your files"
-                        )
-
-                num_errors = 0
-                for file_count in range(len(all_inputs)):
-                    file_type = all_inputs[file_count].split("bold")[1]
-                    if file_type == ".nii" or file_type == ".nii.gz":
-                        try:
-                            TR = layout.get_metadata(all_inputs[file_count])[
-                                "RepetitionTime"
-                            ]
-                        except KeyError as e:
-                            TR = spm_dep.spm.spm_vol(
-                                all_inputs[file_count]
-                            ).header.get_zooms()[-1]
-                        para["TR"] = TR
-                    else:
-                        spm_dep.spm.spm_vol(all_inputs[file_count])
-                        TR = (
-                            spm_dep.spm.spm_vol(all_inputs[file_count])
-                            .get_arrays_from_intent("NIFTI_INTENT_TIME_SERIES")[0]
-                            .meta.get_metadata()["TimeStep"]
-                        )
-                        para["TR"] = float(TR) * 0.001
-
-                    para["dt"] = para["TR"] / para["T"]
-                    para["lag"] = np.arange(
-                        np.trunc(para["min_onset_search"] / para["dt"]),
-                        np.trunc(para["max_onset_search"] / para["dt"]) + 1,
-                        dtype="int",
-                    )
-                    num_errors += 1
-                    try:
-                        fourD_rsHRF.demo_rsHRF(
-                            all_inputs[file_count],
-                            all_masks[file_count] if args.mask == "BIDS" else args.mask,
-                            args.output_dir,
-                            para,
-                            args.n_jobs,
-                            file_type,
-                            mode="bids" + (" w/ atlas" if args.mask != "BIDS" else ""),
-                            temporal_mask=temporal_mask,
-                            wiener=args.wiener,
-                        )
-                        num_errors -= 1
-                    except ValueError as err:
-                        print(err.args[0])
-                    except:
-                        print("Unexpected error:", sys.exc_info()[0])
-                success = len(all_inputs) - num_errors
-                if success == 0:
-                    raise RuntimeError(
-                        "Dimensions were inconsistent for all input-mask pairs; \n"
-                        "No inputs were processed!"
-                    )
 
 
 def main():
