@@ -8,6 +8,7 @@ from pathlib import Path
 from rsHRF import spm_dep, fourD_rsHRF, utils
 
 import warnings
+from .utils.default_parameters import default_parameters
 
 warnings.filterwarnings("ignore")
 
@@ -22,20 +23,35 @@ def get_parser():
         "voxel-wise signal"
     )
 
-    group_input = parser.add_mutually_exclusive_group(required=True)
+    parser.add_argument(
+        "bids_dir",
+        nargs="?",
+        help="the input data for the analysis: a path to a data file or the root "
+        "folder of a BIDS valid dataset, or 'GUI' to run in graphical user interface "
+        "mode",
+        default="GUI",
+    )
+
+    group_input = parser.add_mutually_exclusive_group(required=False)
 
     group_input.add_argument(
         "--ts",
         action="store",
         type=op.abspath,
-        help="the absolute path to a single data file",
+        metavar="INPUT.txt",
+        dest="bids_dir",
+        help="[DEPRECATED] the absolute path to a single text data file. "
+        "Use the positional argument and specify --no-bids.",
     )
 
     group_input.add_argument(
         "--input_file",
         action="store",
         type=op.abspath,
-        help="the absolute path to a single data file",
+        dest="bids_dir",
+        metavar="INPUT.[ng]ii[.gz]",
+        help="[DEPRECATED] the absolute path to a single nii/gii data file. "
+        "Use the positional argument and specify --no-bids.",
     )
 
     group_input.add_argument(
@@ -43,20 +59,42 @@ def get_parser():
         nargs="?",
         action="store",
         type=op.abspath,
-        help="the root folder of a BIDS valid dataset "
-        "(sub-XXXXX folders should be found at the "
-        "top level in this folder).",
+        dest="bids_dir",
+        help="[DEPRECATED] use the positional argument. The root folder of a BIDS "
+        "valid dataset (sub-XXXXX folders should be found at the top level in this"
+        " folder).",
     )
 
     group_input.add_argument(
-        "--GUI", action="store_true", help="to execute the toolbox in GUI mode"
+        "--GUI",
+        action="store_const",
+        const="GUI",
+        dest="input",
+        help="[DEPRECATED] to execute the toolbox in GUI mode, use 'GUI' as"
+        "input file positional argument and specify --no-bids.",
     )
 
     parser.add_argument(
+        "output_dir",
+        action="store",
+        nargs="?",
+        type=op.abspath,
+        help="the output path for the outcomes of processing",
+    )
+
+    parser.add_argument(
+        "--no-bids",
+        action="store_true",
+        help="Explicitly disable bids input. Necessary when using txt or nii/gii files"
+        " directly.",
+    )
+    parser.add_argument(
+        "--output-dir",
         "--output_dir",
         action="store",
         type=op.abspath,
-        help="the output path for the outcomes of processing",
+        help="[DEPRECATED] use the positional argument. The output path for the "
+        "outcomes of processing",
     )
 
     parser.add_argument(
@@ -64,7 +102,8 @@ def get_parser():
         action="store",
         type=int,
         default=-1,
-        help="the number of parallel processing elements",
+        help="the number of parallel processing elements to use, default is -1 (use "
+        "all available cores)",
     )
 
     parser.add_argument(
@@ -75,15 +114,17 @@ def get_parser():
     )
 
     parser.add_argument(
-        "--analysis_level",
+        "analysis_level",
         help="Level of the analysis that will be performed. "
         "Multiple participant level analyses can be run independently "
-        "(in parallel) using the same output_dir.",
+        "(in parallel) using the same output_dir. Only 'participant' level analysis is"
+        " allowed.",
         choices=["participant"],
         nargs="?",
     )
 
     parser.add_argument(
+        "--participant-label",
         "--participant_label",
         help="The label(s) of the participant(s) that should be analyzed. The label "
         "corresponds to sub-<participant_label> from the BIDS spec "
@@ -94,11 +135,22 @@ def get_parser():
     )
 
     parser.add_argument(
+        "--bids-filter-file",
         "--bids_filter_file",
         action="store",
         type=op.abspath,
         help="a JSON file describing custom BIDS input filters using PyBIDS. "
         "For further details, please check out http://bids-apps.neuroimaging.io/rsHRF/",
+    )
+
+    parser.add_argument(
+        "-m",
+        "--mask",
+        action="store",
+        type=op.abspath,
+        help="the absolute path to a single mask file, which should be of the same "
+        "type as the input file (NIfTI or GIfTI). Use 'BIDS' to enable the use of "
+        "mask files present in the BIDS directory itself.",
     )
 
     group_mask = parser.add_mutually_exclusive_group(required=False)
@@ -107,13 +159,17 @@ def get_parser():
         "--atlas",
         action="store",
         type=op.abspath,
-        help="the absolute path to a single atlas file",
+        dest="mask",
+        help="[DEPRECATED] the absolute path to a single atlas file",
     )
 
     group_mask.add_argument(
         "--brainmask",
-        action="store_true",
-        help="to enable the use of mask files present in the BIDS " "directory itself",
+        action="store_const",
+        const="BIDS",
+        dest="mask",
+        help="[DEPRECATED] to enable the use of mask files present in the BIDS "
+        "directory itself. Use '--mask BIDS'",
     )
 
     group_para = parser.add_argument_group("Parameters")
@@ -128,7 +184,8 @@ def get_parser():
         "FIR (Finite Impulse Response), "
         "fourier (Fourier Basis Set), "
         "hanning (Fourier Basis w Hanning), "
-        "gamma (Gamma Basis Set)",
+        f"gamma (Gamma Basis Set).",
+        default=default_parameters["estimation"],
     )
 
     group_para.add_argument(
@@ -137,7 +194,7 @@ def get_parser():
         type=float,
         nargs=2,
         metavar=("LOW_FREQ", "HIGH_FREQ"),
-        default=[0.01, 0.08],
+        default=default_parameters["passband"],
         help="set intervals for bandpass filter, default is 0.01 - 0.08",
     )
 
@@ -147,70 +204,114 @@ def get_parser():
         type=float,
         nargs=2,
         metavar=("LOW_FREQ", "HIGH_FREQ"),
-        default=[0.0, sys.float_info.max],
-        help="set intervals for bandpass filter (used while deconvolving BOLD), default is no-filtering",
+        default=default_parameters["passband_deconvolve"],
+        help="set intervals for bandpass filter (used while deconvolving BOLD), "
+        "default is no-filtering",
     )
 
     group_para.add_argument(
-        "-TR", action="store", type=float, default=-1, help="set TR parameter"
+        "--TR",
+        "-TR",
+        action="store",
+        type=float,
+        help="set TR parameter",
+        default=default_parameters["TR"],
     )
 
     group_para.add_argument(
-        "-T", action="store", type=int, default=3, help="set T parameter"
+        "--T",
+        "-T",
+        action="store",
+        type=int,
+        help=f"set T parameter, default is {default_parameters['T']}",
+        default=default_parameters["T"],
     )
 
     group_para.add_argument(
-        "-T0", action="store", type=int, default=1, help="set T0 parameter"
+        "--T0",
+        "-T0",
+        action="store",
+        type=int,
+        default=default_parameters["T0"],
+        help=f"set T0 parameter, default is {default_parameters['T0']}",
     )
 
     group_para.add_argument(
-        "-TD_DD", action="store", type=int, default=2, help="set TD_DD parameter"
+        "--TD_DD",
+        "-TD_DD",
+        action="store",
+        type=int,
+        default=default_parameters["TD_DD"],
+        help=f"set TD_DD parameter, default is {default_parameters['TD_DD']}",
     )
 
     group_para.add_argument(
-        "-AR_lag", action="store", type=int, default=1, help="set AR_lag parameter"
+        "--AR_lag",
+        "-AR_lag",
+        action="store",
+        type=int,
+        default=default_parameters["AR_lag"],
+        help=f"set AR_lag parameter, default is {default_parameters['AR_lag']}",
     )
 
     group_para.add_argument(
-        "--thr", action="store", type=float, default=1, help="set thr parameter"
+        "--thr",
+        action="store",
+        type=float,
+        default=default_parameters["thr"],
+        help=f"set thr parameter, default is {default_parameters['thr']}",
     )
 
     group_para.add_argument(
+        "--temporal-mask",
         "--temporal_mask",
         action="store",
         type=op.abspath,
-        help='the path for the (temporal) mask file.\n The mask file should be a ".dat" file, consisting of a binary string of the same length as the signal',
+        help="the path for the (temporal) mask file.\n The mask file should be a text "
+        "file, a sequence of 0s and 1s of the same length as the signal",
     )
 
     group_para.add_argument(
         "--order",
         action="store",
         type=int,
-        default=3,
-        help="set the number of basis vectors",
+        default=default_parameters["order"],
+        help=f"set the number of basis vectors, default is "
+        f"{default_parameters['order']} (used for fourier, hanning and gamma basis "
+        "functions)",
     )
 
     group_para.add_argument(
-        "--len", action="store", type=int, default=24, help="set len parameter"
+        "--len",
+        action="store",
+        type=int,
+        default=default_parameters["len"],
+        help=f"set len parameter, default is {default_parameters['len']}s",
     )
 
     group_para.add_argument(
         "--min_onset_search",
         action="store",
         type=int,
-        default=4,
-        help="set min_onset_search parameter",
+        default=default_parameters["min_onset_search"],
+        help=f"set min_onset_search parameter, default is {default_parameters['min_onset_search']}s",
     )
 
     group_para.add_argument(
         "--max_onset_search",
         action="store",
         type=int,
-        default=8,
-        help="set max_onset_search parameter",
+        default=default_parameters["max_onset_search"],
+        help=f"set max_onset_search parameter, default is {default_parameters['max_onset_search']}s",
     )
 
-    group_para.add_argument("--localK", action="store", type=int, help="set localK")
+    group_para.add_argument(
+        "--localK",
+        action="store",
+        type=int,
+        help=f"set localK, default is {default_parameters['localK']}",
+        default=default_parameters["localK"],
+    )
 
     group_para.add_argument(
         "--wiener",
