@@ -25,61 +25,26 @@ def get_parser():
 
     parser.add_argument(
         "bids_dir",
-        nargs="?",
         help="the input data for the analysis: a path to a data file or the root "
         "folder of a BIDS valid dataset, or 'GUI' to run in graphical user interface "
         "mode",
         default="GUI",
     )
 
-    group_input = parser.add_mutually_exclusive_group(required=False)
-
-    group_input.add_argument(
-        "--ts",
-        action="store",
-        type=op.abspath,
-        metavar="INPUT.txt",
-        dest="bids_dir",
-        help="[DEPRECATED] the absolute path to a single text data file. "
-        "Use the positional argument and specify --no-bids.",
-    )
-
-    group_input.add_argument(
-        "--input_file",
-        action="store",
-        type=op.abspath,
-        dest="bids_dir",
-        metavar="INPUT.[ng]ii[.gz]",
-        help="[DEPRECATED] the absolute path to a single nii/gii data file. "
-        "Use the positional argument and specify --no-bids.",
-    )
-
-    group_input.add_argument(
-        "--bids_dir",
-        nargs="?",
-        action="store",
-        type=op.abspath,
-        dest="bids_dir",
-        help="[DEPRECATED] use the positional argument. The root folder of a BIDS "
-        "valid dataset (sub-XXXXX folders should be found at the top level in this"
-        " folder).",
-    )
-
-    group_input.add_argument(
-        "--GUI",
-        action="store_const",
-        const="GUI",
-        dest="bids_dir",
-        help="[DEPRECATED] to execute the toolbox in GUI mode, use 'GUI' as"
-        "input file positional argument and specify --no-bids.",
-    )
-
     parser.add_argument(
         "output_dir",
         action="store",
-        nargs="?",
         type=op.abspath,
         help="the output path for the outcomes of processing",
+    )
+
+    parser.add_argument(
+        "analysis_level",
+        help="Level of the analysis that will be performed. "
+        "Multiple participant level analyses can be run independently "
+        "(in parallel) using the same output_dir. Only 'participant' level analysis is"
+        " allowed.",
+        choices=["participant"],
     )
 
     parser.add_argument(
@@ -87,14 +52,6 @@ def get_parser():
         action="store_true",
         help="Explicitly disable bids input. Necessary when using txt or nii/gii files"
         " directly.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        "--output_dir",
-        action="store",
-        type=op.abspath,
-        help="[DEPRECATED] use the positional argument. The output path for the "
-        "outcomes of processing",
     )
 
     parser.add_argument(
@@ -114,18 +71,7 @@ def get_parser():
     )
 
     parser.add_argument(
-        "analysis_level",
-        help="Level of the analysis that will be performed. "
-        "Multiple participant level analyses can be run independently "
-        "(in parallel) using the same output_dir. Only 'participant' level analysis is"
-        " allowed.",
-        choices=["participant"],
-        nargs="?",
-    )
-
-    parser.add_argument(
         "--participant-label",
-        "--participant_label",
         help="The label(s) of the participant(s) that should be analyzed. The label "
         "corresponds to sub-<participant_label> from the BIDS spec "
         '(so it does not include "sub-"). If this parameter is not '
@@ -136,7 +82,6 @@ def get_parser():
 
     parser.add_argument(
         "--bids-filter-file",
-        "--bids_filter_file",
         action="store",
         type=op.abspath,
         help="a JSON file describing custom BIDS input filters using PyBIDS. "
@@ -151,25 +96,6 @@ def get_parser():
         help="the absolute path to a single mask file, which should be of the same "
         "type as the input file (NIfTI or GIfTI). Use 'BIDS' to enable the use of "
         "mask files present in the BIDS directory itself.",
-    )
-
-    group_mask = parser.add_mutually_exclusive_group(required=False)
-
-    group_mask.add_argument(
-        "--atlas",
-        action="store",
-        type=op.abspath,
-        dest="mask",
-        help="[DEPRECATED] the absolute path to a single atlas file",
-    )
-
-    group_mask.add_argument(
-        "--brainmask",
-        action="store_const",
-        const="BIDS",
-        dest="mask",
-        help="[DEPRECATED] to enable the use of mask files present in the BIDS "
-        "directory itself. Use '--mask BIDS'",
     )
 
     group_para = parser.add_argument_group("Parameters")
@@ -199,7 +125,7 @@ def get_parser():
     )
 
     group_para.add_argument(
-        "--passband_deconvolve",
+        "--passband-deconvolve",
         action="store",
         type=float,
         nargs=2,
@@ -211,7 +137,6 @@ def get_parser():
 
     group_para.add_argument(
         "--TR",
-        "-TR",
         action="store",
         type=float,
         help="set TR parameter",
@@ -229,7 +154,6 @@ def get_parser():
 
     group_para.add_argument(
         "--T0",
-        "-T0",
         action="store",
         type=int,
         default=default_parameters["T0"],
@@ -237,8 +161,7 @@ def get_parser():
     )
 
     group_para.add_argument(
-        "--TD_DD",
-        "-TD_DD",
+        "--TD",
         action="store",
         type=int,
         default=default_parameters["TD_DD"],
@@ -246,8 +169,7 @@ def get_parser():
     )
 
     group_para.add_argument(
-        "--AR_lag",
-        "-AR_lag",
+        "--AR-lag",
         action="store",
         type=int,
         default=default_parameters["AR_lag"],
@@ -256,6 +178,7 @@ def get_parser():
 
     group_para.add_argument(
         "--thr",
+        "--threshold",
         action="store",
         type=float,
         default=default_parameters["thr"],
@@ -264,7 +187,7 @@ def get_parser():
 
     group_para.add_argument(
         "--temporal-mask",
-        "--temporal_mask",
+        "--tmask",
         action="store",
         type=op.abspath,
         help="the path for the (temporal) mask file.\n The mask file should be a text "
@@ -290,7 +213,7 @@ def get_parser():
     )
 
     group_para.add_argument(
-        "--min_onset_search",
+        "--min-onset-search",
         action="store",
         type=int,
         default=default_parameters["min_onset_search"],
@@ -298,7 +221,7 @@ def get_parser():
     )
 
     group_para.add_argument(
-        "--max_onset_search",
+        "--max-onset-search",
         action="store",
         type=int,
         default=default_parameters["max_onset_search"],
