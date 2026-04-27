@@ -8,7 +8,7 @@ from pathlib import Path
 from rsHRF import spm_dep, fourD_rsHRF, utils
 
 import warnings
-from .utils.default_parameters import default_parameters
+from .utils.default_parameters import default_parameters, available_estimations
 
 warnings.filterwarnings("ignore")
 
@@ -103,7 +103,7 @@ def get_parser():
     group_para.add_argument(
         "--estimation",
         action="store",
-        choices=["canon2dd", "sFIR", "FIR", "fourier", "hanning", "gamma"],
+        choices=available_estimations,
         help="Choose the estimation procedure from "
         "canon2dd (canonical shape with 2 derivatives), "
         "sFIR (smoothed Finite Impulse Response), "

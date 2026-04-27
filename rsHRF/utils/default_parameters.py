@@ -18,9 +18,12 @@ default_parameters["len"] = 24  # why?
 default_parameters["temporal_mask"] = []  # why?
 default_parameters["min_onset_search"] = 4  # why?
 default_parameters["max_onset_search"] = 8  # why?
-default_parameters["dt"] = default_parameters["TR"] / default_parameters["T"]  # why?
+default_parameters["wiener"] = False
+default_parameters["dt"] = -1
 default_parameters["lag"] = np.arange(
-    np.trunc(default_parameters["min_onset_search"] / default_parameters["dt"]),
-    np.trunc(default_parameters["max_onset_search"] / default_parameters["dt"]) + 1,
+    0,
+    0,
     dtype="int",
-)  # why?
+)
+
+available_estimations = ["canon2dd", "sFIR", "FIR", "fourier", "hanning", "gamma"]
