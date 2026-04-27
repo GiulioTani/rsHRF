@@ -7,6 +7,11 @@ from bids.layout import BIDSLayout
 from pathlib import Path
 from rsHRF import spm_dep, fourD_rsHRF, utils
 
+try:
+    from .rsHRF_GUI import run
+except ModuleNotFoundError:
+    run = None
+
 import warnings
 from .utils.default_parameters import default_parameters, available_estimations
 
@@ -36,6 +41,7 @@ def get_parser():
         action="store",
         type=op.abspath,
         help="the output path for the outcomes of processing",
+        nargs="?",
     )
 
     parser.add_argument(
@@ -45,6 +51,7 @@ def get_parser():
         "(in parallel) using the same output_dir. Only 'participant' level analysis is"
         " allowed.",
         choices=["participant"],
+        nargs="?",
     )
 
     parser.add_argument(
@@ -163,6 +170,7 @@ def get_parser():
     group_para.add_argument(
         "--TD",
         action="store",
+        dest="TD_DD",
         type=int,
         default=default_parameters["TD_DD"],
         help=f"set TD_DD parameter, default is {default_parameters['TD_DD']}",
@@ -256,11 +264,11 @@ def run_rsHRF():
     temporal_mask = []
 
     if args.bids_dir == "GUI" and args.no_bids:
-        try:
-            from .rsHRF_GUI import run
+        if run is not None:
 
             run.run(para)
-        except ModuleNotFoundError:
+            return 0
+        else:
             parser.error("--GUI should not be used inside a Docker container")
     else:
         if args.output_dir is None:
@@ -279,6 +287,10 @@ def run_rsHRF():
 
         if op.isdir(args.bids_dir):
             input_type = "BIDS"
+            if args.analysis_level is None:
+                parser.error(
+                    "When running BIDS analysis you must provide the analysis level 'participant'."
+                )
         elif (
             args.bids_dir.endswith((".nii", ".nii.gz", ".gii", ".gii.gz"))
             and args.no_bids
@@ -290,12 +302,6 @@ def run_rsHRF():
             parser.error(
                 "When not using BIDS structure you must specify --no-bids and the input file "
                 "should be a 4D NIfTI or GIfTI file, or a text file containing the time-series"
-            )
-
-        if input_type != "BIDS" and args.analysis_level is not None:
-            print(
-                "Warning: analysis_level cannot be used with input different from BIDS, ignoring it.",
-                file=sys.stderr,
             )
 
         if input_type != "BIDS" and args.participant_label is not None:
@@ -345,8 +351,6 @@ def run_rsHRF():
                 parser.error(
                     "Unable to read temporal mask file. Please make sure the file is a text file, consisting of a sequence of 0s and 1s of the same length as the signal"
                 )
-        if args.estimation == "sFIR" or args.estimation == "FIR":
-            para["T"] = 1
 
         if input_type != "BIDS":
             if para["TR"] <= 0:
@@ -392,6 +396,7 @@ def run_rsHRF():
                     temporal_mask=temporal_mask,
                     wiener=args.wiener,
                 )
+                return 0
 
             else:
                 # carry analysis with input_file and atlas
@@ -412,6 +417,7 @@ def run_rsHRF():
                     temporal_mask=temporal_mask,
                     wiener=args.wiener,
                 )
+                return 0
 
         else:
             utils.bids.write_derivative_description(args.bids_dir, args.output_dir)
@@ -610,6 +616,7 @@ def run_rsHRF():
                     "Dimensions were inconsistent for all input-mask pairs; \n"
                     "No inputs were processed!"
                 )
+            return 0
 
 
 def main():

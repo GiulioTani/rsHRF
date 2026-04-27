@@ -53,7 +53,7 @@ class Parameters:
 
     def get_order(self):
         # order is only relevant for fourier and gamma estimation
-        if "gamma" in self.get_estimation or "fourier" in self.get_estimation:
+        if "gamma" in self.get_estimation() or "fourier" in self.get_estimation():
             return self.order
         else:
             return None
@@ -262,7 +262,7 @@ class Parameters:
         """
         Sets Volterra if the estimation rule is canon2dd
         """
-        if self.estimation == "canon":
+        if "canon" in self.estimation:
             try:
                 volterra = int(volterra)
             except:
@@ -354,8 +354,8 @@ class Parameters:
         Re-calculating lag
         """
         self.lag = np.arange(
-            np.fix(self.min_onset_search / self.dt),
-            np.fix(self.max_onset_search / self.dt) + 1,
+            np.trunc(self.min_onset_search / self.dt),
+            np.trunc(self.max_onset_search / self.dt) + 1,
             dtype="int",
         )
 

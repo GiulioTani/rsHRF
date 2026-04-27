@@ -7,8 +7,8 @@ class ParameterWindow:
         self.window = Toplevel()
         self.window.title("Parameters")
         self.parameters = {}
-        self.labels = []
-        self.entries = []
+        self.labels: list[Label] = []
+        self.entries: list[Entry] = []
         # get screen width and height
         screen_width = self.window.winfo_screenwidth()
         screen_height = self.window.winfo_screenheight()
