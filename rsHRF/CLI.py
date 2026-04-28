@@ -4,6 +4,7 @@ import os.path as op
 import json
 from argparse import ArgumentParser
 from bids.layout import BIDSLayout
+from bids.config import set_option
 from pathlib import Path
 from rsHRF import spm_dep, fourD_rsHRF, utils
 
@@ -15,7 +16,7 @@ except ModuleNotFoundError:
 import warnings
 from .utils.default_parameters import default_parameters, available_estimations
 
-warnings.filterwarnings("ignore")
+set_option("extension_initial_dot", True)
 
 with open(op.join(op.dirname(op.realpath(__file__)), "VERSION"), "r") as fh:
     __version__ = fh.read().strip("\n")
@@ -355,7 +356,7 @@ def run_rsHRF():
             if para["TR"] <= 0:
                 if input_type == "text":
                     parser.error("Please supply a valid TR using -TR argument")
-                elif input_type == "4Dimage":
+                else:  # it's 4D image
                     if ".nii" in args.bids_dir:
                         TR = (spm_dep.spm.spm_vol(args.bids_dir).header.get_zooms())[-1]
                     else:
@@ -370,11 +371,6 @@ def run_rsHRF():
                             file=sys.stderr,
                         )
                         para["TR"] = TR
-                else:
-                    parser.error(
-                        "Explicit TR value is ignored when input is BIDS, as TR will be "
-                        "read from the metadata of the input files."
-                    )
             para["dt"] = para["TR"] / para["T"]
             para["lag"] = np.arange(
                 np.trunc(para["min_onset_search"] / para["dt"]),
@@ -397,7 +393,7 @@ def run_rsHRF():
                 )
                 return 0
 
-            else:
+            else:  # it's 4D image
                 # carry analysis with input_file and atlas
                 file_type = op.splitext(args.bids_dir)
                 if file_type[-1] == ".gz":
@@ -418,7 +414,7 @@ def run_rsHRF():
                 )
                 return 0
 
-        else:
+        else:  # it's BIDS
             utils.bids.write_derivative_description(args.bids_dir, args.output_dir)
             bids_dir = Path(args.bids_dir)
             fname = bids_dir / "dataset_description.json"
@@ -446,6 +442,12 @@ def run_rsHRF():
                     "using the BIDS Validator (http://incf.github.io/bids-validator/)."
                 )
 
+            if para["TR"] >= 0:
+                warnings.warn(
+                    "Explicit TR value is ignored when input is BIDS, as TR will be "
+                    "read from the metadata of the input files."
+                )
+
             layout = BIDSLayout(
                 args.bids_dir, validate=False, config=["bids", "derivatives"]
             )
@@ -456,7 +458,7 @@ def run_rsHRF():
             else:
                 subjects_to_analyze = layout.get_subjects()
 
-            if not subjects_to_analyze:
+            if len(subjects_to_analyze) == 0:
                 parser.error(
                     "Could not find participants. Please make sure the BIDS data "
                     "structure is present and correct. Datasets can be validated online "
