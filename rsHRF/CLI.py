@@ -305,21 +305,20 @@ def run_rsHRF():
             )
 
         if input_type != "BIDS" and args.participant_label is not None:
-            print(
-                "Warning: participant_labels are not to be used with 4Dimage or text input, do not supply it",
-                file=sys.stderr,
+            warnings.warn(
+                "Participant_labels are not to be used with 4Dimage or text input, do not supply it",
             )
 
         if input_type == "text" and args.mask is not None:
-            print(
-                "Warning: No brainmask can be applied with text input, ignoring it.",
-                file=sys.stderr,
+            warnings.warn(
+                "No brainmask can be applied with text input, ignoring it.",
             )
+            args.mask = None
+
         if input_type == "4Dimage" and args.mask is not None:
             if args.mask == "BIDS":
-                print(
-                    "Warning: BIDS masks cannot be applied with 4D image input, ignoring it.",
-                    file=sys.stderr,
+                warnings.warn(
+                    "BIDS masks cannot be applied with 4D image input, ignoring it.",
                 )
                 args.mask = None
             elif ("nii" in args.bids_dir and "gii" in args.mask) or (
@@ -329,16 +328,16 @@ def run_rsHRF():
                     "The mask file should be of the same type as the input file (NIfTI or GIfTI)"
                 )
 
-        if args.mask is not None:
-            if args.mask == "BIDS":
-                if not input_type == "BIDS":
-                    parser.error("BIDS mask is allowed only with BIDS input.")
-            else:
-                args.mask = op.abspath(args.mask)
-                if not args.mask.endswith((".nii", ".nii.gz", ".gii", ".gii.gz")):
-                    parser.error(
-                        "The mask file should be of the same type as the input file (NIfTI or GIfTI)"
-                    )
+        if args.mask is not None and args.mask != "BIDS":
+            args.mask = op.abspath(args.mask)
+            if not args.mask.endswith((".nii", ".nii.gz", ".gii", ".gii.gz")):
+                parser.error(
+                    "The mask file should be of the same type as the input file (NIfTI or GIfTI)"
+                )
+            if not op.isfile(args.mask):
+                parser.error(
+                    "The mask file provided does not exist, please provide a valid path."
+                )
 
         if args.temporal_mask is not None:
             try:
@@ -620,7 +619,6 @@ def run_rsHRF():
 
 
 def main():
-    warnings.filterwarnings("ignore")
     run_rsHRF()
 
 
