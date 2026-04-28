@@ -17,7 +17,7 @@ class Parameters:
             setattr(self, key, value)
 
     # getters
-    def get_estimation(self):
+    def get_estimation(self) -> str:
         return self.estimation
 
     def get_passband(self):
@@ -53,7 +53,7 @@ class Parameters:
 
     def get_order(self):
         # order is only relevant for fourier and gamma estimation
-        if "gamma" in self.get_estimation() or "fourier" in self.get_estimation():
+        if "gamma" in self.get_estimation or "fourier" in self.get_estimation:
             return self.order
         else:
             return None
