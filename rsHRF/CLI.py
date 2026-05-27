@@ -261,25 +261,22 @@ def run_rsHRF():
     temporal_mask = []
 
     if args.bids_dir == "GUI" and args.no_bids:
-    try:
-        from .rsHRF_GUI import run as gui_run
-    except Exception as exc:
-        parser.error(
-            "--GUI could not be started. This is expected in headless or Docker "
-            f"environments. Original error: {exc}"
-        )
-
-    gui_run.run(para)
-    return 0
+        try:
+            from .rsHRF_GUI import run as gui_run
+        except Exception as exc:
+            parser.error(
+                "--GUI could not be started. This is expected in headless or Docker "
+                f" environments. Original error: {exc}"
+            )
+        gui_run.run(para)
+        return 0
     else:
         if args.output_dir is None:
             parser.error(
                 "--output_dir is required when executing in command-line interface"
             )
-        elif not op.isdir(args.output_dir):
-            parser.error(
-                "--output_dir must be a valid directory path that already exists."
-            )
+
+    
 
         if not op.exists(args.bids_dir):
             parser.error(
