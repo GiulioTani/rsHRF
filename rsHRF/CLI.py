@@ -8,10 +8,6 @@ from bids.config import set_option
 from pathlib import Path
 from rsHRF import spm_dep, fourD_rsHRF, utils
 
-try:
-    from .rsHRF_GUI import run
-except ModuleNotFoundError:
-    run = None
 
 import warnings
 from .utils.default_parameters import default_parameters, available_estimations
@@ -265,12 +261,16 @@ def run_rsHRF():
     temporal_mask = []
 
     if args.bids_dir == "GUI" and args.no_bids:
-        if run is not None:
+    try:
+        from .rsHRF_GUI import run as gui_run
+    except Exception as exc:
+        parser.error(
+            "--GUI could not be started. This is expected in headless or Docker "
+            f"environments. Original error: {exc}"
+        )
 
-            run.run(para)
-            return 0
-        else:
-            parser.error("--GUI should not be used inside a Docker container")
+    gui_run.run(para)
+    return 0
     else:
         if args.output_dir is None:
             parser.error(
