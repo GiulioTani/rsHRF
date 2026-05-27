@@ -11,6 +11,7 @@ from tkinter import (
     StringVar,
     Label,
 )
+from ...utils.default_parameters import available_estimations
 
 
 class InputWindow:
@@ -146,14 +147,7 @@ class InputWindow:
         maskFileLabel = Label(window, text="")
         outputPathLabel = Label(window, text="")
         estimationDropDown = OptionMenu(
-            window,
-            self.estimationOption,
-            "canon2dd",
-            "sFIR",
-            "FIR",
-            "gamma",
-            "fourier",
-            "fourier w/ hanning",
+            window, self.estimationOption, *available_estimations
         )
         # placing widgets
         inputFormat.grid(row=0, column=0, padx=(5, 5), pady=(5, 5))

@@ -2,6 +2,7 @@ import sys
 import numpy as np
 from copy import deepcopy
 from ...misc.status import Status
+from ....utils.default_parameters import default_parameters
 
 
 class Parameters:
@@ -12,31 +13,11 @@ class Parameters:
 
     def __init__(self):
         # initialize default parameters
-        self.estimation = "canon2dd"
-        self.passband = [0.01, 0.08]
-        self.passband_deconvolve = [0.0, sys.float_info.max]
-        self.TR = 2.0
-        self.localK = 1
-        self.T = 3
-        self.T0 = 1
-        self.TD_DD = 2
-        self.AR_lag = 1
-        self.thr = 1
-        self.order = 3
-        self.volterra = 0
-        self.len = 24
-        self.temporal_mask = []
-        self.min_onset_search = 4
-        self.max_onset_search = 8
-        self.dt = self.TR / self.T
-        self.lag = np.arange(
-            np.fix(self.min_onset_search / self.dt),
-            np.fix(self.max_onset_search / self.dt) + 1,
-            dtype="int",
-        )
+        for key, value in default_parameters.items():
+            setattr(self, key, value)
 
     # getters
-    def get_estimation(self):
+    def get_estimation(self) -> str:
         return self.estimation
 
     def get_passband(self):
@@ -281,7 +262,7 @@ class Parameters:
         """
         Sets Volterra if the estimation rule is canon2dd
         """
-        if self.estimation == "canon":
+        if "canon" in self.estimation:
             try:
                 volterra = int(volterra)
             except:
@@ -373,8 +354,8 @@ class Parameters:
         Re-calculating lag
         """
         self.lag = np.arange(
-            np.fix(self.min_onset_search / self.dt),
-            np.fix(self.max_onset_search / self.dt) + 1,
+            np.trunc(self.min_onset_search / self.dt),
+            np.trunc(self.max_onset_search / self.dt) + 1,
             dtype="int",
         )
 

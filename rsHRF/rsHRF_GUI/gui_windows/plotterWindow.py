@@ -1,7 +1,11 @@
 import mpld3
 import matplotlib
 
-matplotlib.use("TkAgg")
+try:
+    matplotlib.use("TkAgg")
+except ImportError:
+    matplotlib.use("Agg")
+
 import numpy as np
 from matplotlib.figure import Figure
 from tkinter import ttk, Toplevel, Canvas, TOP, BOTH, BOTTOM
