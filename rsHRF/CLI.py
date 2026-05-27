@@ -276,8 +276,6 @@ def run_rsHRF():
                 "--output_dir is required when executing in command-line interface"
             )
 
-    
-
         if not op.exists(args.bids_dir):
             parser.error(
                 "The input path provided does not exist, please provide a valid path."
