@@ -375,17 +375,20 @@ def run_rsHRF():
 
             if input_type == "text":
                 file_type = op.splitext(args.bids_dir)[-1]
-                fourD_rsHRF.demo_rsHRF(
-                    args.bids_dir,
-                    None,
-                    args.output_dir,
-                    para,
-                    args.n_jobs,
-                    file_type,
-                    mode="time-series",
-                    temporal_mask=temporal_mask,
-                    wiener=args.wiener,
-                )
+                try:
+                    fourD_rsHRF.demo_rsHRF(
+                        args.bids_dir,
+                        None,
+                        args.output_dir,
+                        para,
+                        args.n_jobs,
+                        file_type,
+                        mode="time-series",
+                        temporal_mask=temporal_mask,
+                        wiener=args.wiener,
+                    )
+                except ValueError as exc:
+                    parser.error(str(exc))
                 return 0
 
             else:  # it's 4D image
