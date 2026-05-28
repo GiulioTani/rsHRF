@@ -108,19 +108,28 @@ workflows:
   build_and_deploy:
     jobs:
       - test:
+          name: test
           filters:
             tags:
-              only: /^v.*/
-            branches:
-              only: /.*/
-      - deploy_pypi:
-          requires:
-            - test
+              ignore: /.*/
+
+      - test:
+          name: test_release
           filters:
             tags:
               only: /^v.*/
             branches:
               ignore: /.*/
+
+      - deploy_pypi:
+          requires:
+            - test_release
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
       - docker_build:
           requires:
             - deploy_pypi
@@ -129,6 +138,7 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
+
       - deploy_dockerhub:
           context:
             - dockerhub
