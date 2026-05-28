@@ -15,7 +15,9 @@ class VerifyVersionCommand(install):
 
     def run(self):
         tag = os.getenv("CIRCLE_TAG")
-        if tag is not None and tag != VERSION:
+        normalized_tag = tag[1:] if tag is not None and tag.startswith("v") else tag
+
+        if normalized_tag is not None and normalized_tag != VERSION:
             info = "Git tag: {0} does not match version: {1}".format(tag, VERSION)
             sys.exit(info)
 
