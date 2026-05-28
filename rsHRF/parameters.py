@@ -14,7 +14,7 @@ def wgr_get_parameters(hdrf, dt):
     param = np.zeros((3, 1))
 
     if np.any(hdrf):
-        n = np.fix(np.amax(hdrf.shape) * 0.8)
+        n = np.trunc(np.amax(hdrf.shape) * 0.8)
 
         p = np.argmax(np.absolute(hdrf[np.arange(0, n, dtype="int")]))
         h = hdrf[p]
