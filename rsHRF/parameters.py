@@ -41,5 +41,7 @@ def wgr_get_parameters(hdrf, dt):
         param[2] = w * dt
 
     else:
-        print(".")
+        warnings.warn(
+            "Empty or zero time course for voxel (probably masked).", RuntimeWarning
+        )
     return param.ravel()
