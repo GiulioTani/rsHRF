@@ -23,12 +23,12 @@ jobs:
             mkdir ${HOME}/scratch/downloads
             wget -c -P ${HOME}/scratch/downloads/ "https://osf.io/xv72t//download"
             tar xf ${HOME}/scratch/downloads/download -C ${HOME}/scratch
-            rsHRF --bids_dir ${HOME}/scratch/ds002790/derivatives/fmriprep/ \
-              --output_dir ${HOME}/scratch/ds002790 \
-              --participant_label 0001 \
-              --brainmask \
-              --estimation canon2dd \
-              --analysis_level participant
+            rsHRF ${HOME}/scratch/ds002790/derivatives/fmriprep/ \
+              ${HOME}/scratch/ds002790 \
+              participant \
+              --participant-label 0001 \
+              -m BIDS \
+              --estimation canon2dd
           no_output_timeout: 6h
 
   deploy_pypi:
@@ -109,13 +109,25 @@ workflows:
             - test
           filters:
             tags:
-              only: /.*/
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - docker_build:
           requires:
             - deploy_pypi # docker images pulls rsHRF from pypi
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - deploy_dockerhub:
           context:
             - dockerhub
           requires:
             - docker_build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
 

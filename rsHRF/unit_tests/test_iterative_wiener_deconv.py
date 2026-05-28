@@ -3,18 +3,17 @@ import numpy as np
 import warnings
 from .. import iterative_wiener_deconv
 
-
 # ============================================================================
 # BACKWARD COMPATIBILITY TESTS
 # ============================================================================
+
 
 def test_rsHRF_iterative_wiener_deconv():
     """Original test - ensures backward compatibility with old API"""
     var1 = np.random.randint(100, 150)
     var2 = np.random.randint(4, 20)
     out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        np.random.random(var1),
-        np.random.random(var2)
+        np.random.random(var1), np.random.random(var2)
     )
     assert type(out) == type(np.asarray([]))
     assert out.size == var1
@@ -22,11 +21,27 @@ def test_rsHRF_iterative_wiener_deconv():
     # Test with fixed values - validates function runs without errors
     # Note: Expected values from old implementation differ due to mean-centering
     # and other v2.5 improvements, so we just verify output is valid
-    y = np.asarray([0.6589422147608651, 0.7239697210706654, 0.5596745029686809,
-                    0.1518281619871923, 0.9344253850406739, 0.06696275606106217,
-                    0.8730982497140573, 0.22794714268930805, 0.6120490212897929])
-    h = np.asarray([0.8401094233417159, 0.5039895222403991, 0.008901275117447982,
-                    0.28477784598041767])
+    y = np.asarray(
+        [
+            0.6589422147608651,
+            0.7239697210706654,
+            0.5596745029686809,
+            0.1518281619871923,
+            0.9344253850406739,
+            0.06696275606106217,
+            0.8730982497140573,
+            0.22794714268930805,
+            0.6120490212897929,
+        ]
+    )
+    h = np.asarray(
+        [
+            0.8401094233417159,
+            0.5039895222403991,
+            0.008901275117447982,
+            0.28477784598041767,
+        ]
+    )
     out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(y, h)
 
     # Verify output is valid (new implementation produces different but correct values)
@@ -45,9 +60,7 @@ def test_deprecated_iterations_parameter():
     # Should raise deprecation warning
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-            y, h, Iterations=25
-        )
+        out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(y, h, Iterations=25)
         assert len(w) == 1
         assert issubclass(w[-1].category, DeprecationWarning)
         assert "Iterations" in str(w[-1].message)
@@ -61,6 +74,7 @@ def test_deprecated_iterations_parameter():
 # ============================================================================
 # NEW API TESTS (MATLAB v2.5 features)
 # ============================================================================
+
 
 def test_new_api_with_tr():
     """Test new API with TR parameter"""
@@ -82,7 +96,7 @@ def test_rest_mode():
     h = np.random.random(15)
 
     out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        y, h, TR=2.0, Mode='rest', MaxIter=30
+        y, h, TR=2.0, Mode="rest", MaxIter=30
     )
 
     assert out.shape == (150,)
@@ -96,7 +110,7 @@ def test_task_mode():
     h = np.random.random(15)
 
     out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        y, h, TR=2.0, Mode='task', MaxIter=30
+        y, h, TR=2.0, Mode="task", MaxIter=30
     )
 
     assert out.shape == (150,)
@@ -110,13 +124,7 @@ def test_custom_parameters():
     h = np.random.random(15)
 
     out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        y, h,
-        TR=2.0,
-        Mode='rest',
-        MaxIter=50,
-        Tol=1e-5,
-        Smooth=5,
-        LowPass=0.15
+        y, h, TR=2.0, Mode="rest", MaxIter=50, Tol=1e-5, Smooth=5, LowPass=0.15
     )
 
     assert out.shape == (150,)
@@ -149,17 +157,17 @@ def test_different_tr_values():
 
     # Fast TR
     out1 = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        y, h, TR=0.72, Mode='rest', MaxIter=30
+        y, h, TR=0.72, Mode="rest", MaxIter=30
     )
 
     # Standard TR
     out2 = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        y, h, TR=2.0, Mode='rest', MaxIter=30
+        y, h, TR=2.0, Mode="rest", MaxIter=30
     )
 
     # Slow TR
     out3 = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        y, h, TR=3.0, Mode='rest', MaxIter=30
+        y, h, TR=3.0, Mode="rest", MaxIter=30
     )
 
     # All should produce valid outputs
@@ -175,7 +183,7 @@ def test_mode_case_insensitive():
     h = np.random.random(10)
 
     # Should all work
-    for mode in ['rest', 'Rest', 'REST', 'task', 'Task', 'TASK']:
+    for mode in ["rest", "Rest", "REST", "task", "Task", "TASK"]:
         out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
             y, h, TR=2.0, Mode=mode, MaxIter=20
         )
@@ -190,7 +198,7 @@ def test_invalid_mode():
 
     with pytest.raises(ValueError, match="Unknown Mode"):
         iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-            y, h, TR=2.0, Mode='invalid', MaxIter=20
+            y, h, TR=2.0, Mode="invalid", MaxIter=20
         )
 
 
@@ -200,9 +208,7 @@ def test_no_tr_defaults():
     h = np.random.random(10)
 
     # Should still work with default fs=1.0
-    out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        y, h, MaxIter=30
-    )
+    out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(y, h, MaxIter=30)
 
     assert out.shape == (100,)
     assert not np.any(np.isnan(out))
@@ -212,6 +218,7 @@ def test_no_tr_defaults():
 # ============================================================================
 # EDGE CASES AND ROBUSTNESS TESTS
 # ============================================================================
+
 
 def test_short_signals():
     """Test with very short signals"""
@@ -301,6 +308,7 @@ def test_consistent_output_shape():
 # REGRESSION TESTS (consistency with previous version)
 # ============================================================================
 
+
 def test_consistency_old_vs_new_api():
     """Test that new API gives similar results to old API (high correlation)"""
     np.random.seed(123)
@@ -312,7 +320,7 @@ def test_consistency_old_vs_new_api():
 
     # New API with rest mode
     out_new = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
-        y.copy(), h.copy(), TR=2.0, Mode='rest', MaxIter=50
+        y.copy(), h.copy(), TR=2.0, Mode="rest", MaxIter=50
     )
 
     # Should have reasonable correlation (may not be perfect due to new features)
@@ -327,6 +335,7 @@ def test_consistency_old_vs_new_api():
 # ============================================================================
 # PARAMETER VALIDATION TESTS
 # ============================================================================
+
 
 def test_maxiter_validation():
     """Test that MaxIter parameter works as expected"""
@@ -376,6 +385,7 @@ def test_tolerance_parameter():
 # FEATURE-SPECIFIC TESTS
 # ============================================================================
 
+
 def test_mean_centering():
     """Test that mean-centering is applied"""
     # Signal with non-zero mean
@@ -395,7 +405,7 @@ def test_mean_centering():
 def test_2d_input_handling():
     """Test that 2D input is flattened correctly"""
     y = np.random.random((100, 1))  # 2D array
-    h = np.random.random((10, 1))   # 2D array
+    h = np.random.random((10, 1))  # 2D array
 
     out = iterative_wiener_deconv.rsHRF_iterative_wiener_deconv(
         y, h, TR=2.0, MaxIter=30

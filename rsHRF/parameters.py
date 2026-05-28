@@ -3,6 +3,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
+
 def wgr_get_parameters(hdrf, dt):
     """
     Find Model Parameters
@@ -12,19 +13,19 @@ def wgr_get_parameters(hdrf, dt):
     """
     param = np.zeros((3, 1))
 
-    if(np.any(hdrf)):
-        n = np.fix(np.amax(hdrf.shape) * 0.8)
+    if np.any(hdrf):
+        n = np.trunc(np.amax(hdrf.shape) * 0.8)
 
-        p = np.argmax(np.absolute(hdrf[np.arange(0, n, dtype='int')]))
+        p = np.argmax(np.absolute(hdrf[np.arange(0, n, dtype="int")]))
         h = hdrf[p]
 
         if h > 0:
-            v = (hdrf >= (h / 2))
+            v = hdrf >= (h / 2)
         else:
-            v = (hdrf <= (h / 2))
+            v = hdrf <= (h / 2)
         v = v.astype(int)
         b = np.argmin(np.diff(v))
-        v[b + 1:] = 0
+        v[b + 1 :] = 0
         w = np.sum(v)
 
         cnt = p - 1
@@ -40,5 +41,7 @@ def wgr_get_parameters(hdrf, dt):
         param[2] = w * dt
 
     else:
-        print('.')
+        warnings.warn(
+            "Empty or zero time course for voxel (probably masked).", RuntimeWarning
+        )
     return param.ravel()

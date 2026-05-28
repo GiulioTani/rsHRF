@@ -1,9 +1,10 @@
 import numpy as np
-from scipy.io   import savemat
-from copy       import deepcopy
+from scipy.io import savemat
+from copy import deepcopy
 
 from ...datatypes.misc.parameters import Parameters
-from .timeseries                  import TimeSeries
+from .timeseries import TimeSeries
+
 
 class BOLD_Raw(TimeSeries):
     """
@@ -12,14 +13,17 @@ class BOLD_Raw(TimeSeries):
     Attributes:
         1. input_file : the input-file path of the Raw BOLD Time-series
     """
-    def __init__(self, label="",ts=np.array([]),subject_index="", para=Parameters()):
-        TimeSeries.__init__(self, label="",ts=np.array([]),subject_index="", para=Parameters())
-        self.label          = label
-        self.subject_index  = subject_index
-        self.timeseries     = ts
-        self.shape          = ts.shape
-        self.parameters     = deepcopy(para)
-        self.input_file     = ""
+
+    def __init__(self, label="", ts=np.array([]), subject_index="", para=Parameters()):
+        TimeSeries.__init__(
+            self, label="", ts=np.array([]), subject_index="", para=Parameters()
+        )
+        self.label = label
+        self.subject_index = subject_index
+        self.timeseries = ts
+        self.shape = ts.shape
+        self.parameters = deepcopy(para)
+        self.input_file = ""
 
     # setters
     def set_inputfile(self, input_file):
@@ -31,12 +35,12 @@ class BOLD_Raw(TimeSeries):
 
     # misc.
     def compareTimeSeries(self, ts):
-        """ Compares another time-series with itself to determine if both are identical
-            Two checks are performed:
-                1. Label
-                2. Input-file name
-            If all the three comparisions return true, then both the HRF
-                time-series objects are identical
+        """Compares another time-series with itself to determine if both are identical
+        Two checks are performed:
+            1. Label
+            2. Input-file name
+        If all the three comparisions return true, then both the HRF
+            time-series objects are identical
         """
         if self.label == ts.get_label() and self.input_file == ts.get_inputfile():
             return True
@@ -44,7 +48,7 @@ class BOLD_Raw(TimeSeries):
             return False
 
     def save_info(self, name):
-        """ Saves the information about the time-series in a .mat file """
+        """Saves the information about the time-series in a .mat file"""
         try:
             dic = {}
             dic["timeseries"] = self.timeseries

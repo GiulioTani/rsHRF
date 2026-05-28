@@ -4,14 +4,18 @@ from scipy.signal.windows import gaussian
 from scipy.signal import convolve
 import warnings
 
-def rsHRF_iterative_wiener_deconv(y, h,
-                                   TR=None,
-                                   MaxIter=None,
-                                   Tol=1e-4,
-                                   Mode='rest',
-                                   Smooth=None,
-                                   LowPass=None,
-                                   Iterations=None):
+
+def rsHRF_iterative_wiener_deconv(
+    y,
+    h,
+    TR=None,
+    MaxIter=None,
+    Tol=1e-4,
+    Mode="rest",
+    Smooth=None,
+    LowPass=None,
+    Iterations=None,
+):
     """
     Iterative Wiener-like deconvolution with wavelet-based noise estimation.
 
@@ -23,7 +27,7 @@ def rsHRF_iterative_wiener_deconv(y, h,
         warnings.warn(
             "Parameter 'Iterations' is deprecated. Use 'MaxIter' instead.",
             DeprecationWarning,
-            stacklevel=2
+            stacklevel=2,
         )
         MaxIter = Iterations
 
@@ -43,7 +47,7 @@ def rsHRF_iterative_wiener_deconv(y, h,
 
     # Pad HRF to signal length
     if nh < N:
-        h = np.pad(h, (0, N - nh), mode='constant', constant_values=0)
+        h = np.pad(h, (0, N - nh), mode="constant", constant_values=0)
     elif nh > N:
         h = h[:N]
 
@@ -57,14 +61,14 @@ def rsHRF_iterative_wiener_deconv(y, h,
 
     # ============ AUTO-RECOMMENDATIONS ============
     if Smooth is None or LowPass is None:
-        if Mode.lower() == 'rest':
+        if Mode.lower() == "rest":
             if TR is not None:
                 smooth_rec = max(int(np.round(4.0 / TR)), 3)
                 lowpass_rec = min(0.2, 0.8 * nyquist)
             else:
                 smooth_rec = 3
                 lowpass_rec = 0.2
-        elif Mode.lower() == 'task':
+        elif Mode.lower() == "task":
             if TR is not None:
                 smooth_rec = max(int(np.round(2.0 / TR)), 2)
                 lowpass_rec = min(0.35, 0.9 * nyquist)
@@ -85,10 +89,10 @@ def rsHRF_iterative_wiener_deconv(y, h,
 
     # Initial estimate
     xhat = y.copy()
-    Pxx = np.abs(Y)**2
+    Pxx = np.abs(Y) ** 2
 
     # ============ INITIAL NOISE ESTIMATION ============
-    coeffs = pywt.wavedec(y, 'db2', level=1)
+    coeffs = pywt.wavedec(y, "db2", level=1)
     detail_coeffs = coeffs[-1]
     # MAD-based noise estimation
     sigma = np.median(np.abs(detail_coeffs)) / 0.6745
@@ -96,11 +100,11 @@ def rsHRF_iterative_wiener_deconv(y, h,
 
     # ============ ITERATIVE PROCESS ============
     for iteration in range(MaxIter):
-        M = (np.conj(H) * Pxx * Y) / (np.abs(H)**2 * Pxx + Nf)
-        PxxY = (Pxx * Nf) / (np.abs(H)**2 * Pxx + Nf)
-        Pxx_new = PxxY + np.abs(M)**2
+        M = (np.conj(H) * Pxx * Y) / (np.abs(H) ** 2 * Pxx + Nf)
+        PxxY = (Pxx * Nf) / (np.abs(H) ** 2 * Pxx + Nf)
+        Pxx_new = PxxY + np.abs(M) ** 2
 
-        WienerFilterEst = (np.conj(H) * Pxx_new) / (np.abs(H)**2 * Pxx_new + Nf)
+        WienerFilterEst = (np.conj(H) * Pxx_new) / (np.abs(H) ** 2 * Pxx_new + Nf)
         xhat_new = np.real(np.fft.ifft(WienerFilterEst * Y))
 
         # ============ GAUSSIAN SMOOTHING ============
@@ -110,7 +114,7 @@ def rsHRF_iterative_wiener_deconv(y, h,
             std_val = (Smooth - 1) / (2 * 2.5)
             g = gaussian(int(Smooth), std=std_val)
             g = g / np.sum(g)
-            xhat_new = convolve(xhat_new, g, mode='same')
+            xhat_new = convolve(xhat_new, g, mode="same")
 
         # ============ LOW-PASS FILTERING ============
         if LowPass < nyquist:
@@ -121,9 +125,9 @@ def rsHRF_iterative_wiener_deconv(y, h,
             xhat_new = np.real(np.fft.ifft(Xf))
 
         # ============ DYNAMIC NOISE UPDATE ============
-        residual = y - convolve(xhat_new, h, mode='same')
+        residual = y - convolve(xhat_new, h, mode="same")
 
-        coeffs = pywt.wavedec(residual, 'db2', level=1)
+        coeffs = pywt.wavedec(residual, "db2", level=1)
         detail_coeffs = coeffs[-1]
         sigma = np.median(np.abs(detail_coeffs)) / 0.6745
         Nf = sigma**2 * N
