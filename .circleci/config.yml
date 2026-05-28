@@ -109,13 +109,25 @@ workflows:
             - test
           filters:
             tags:
-              only: /.*/
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - docker_build:
           requires:
             - deploy_pypi # docker images pulls rsHRF from pypi
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
       - deploy_dockerhub:
           context:
             - dockerhub
           requires:
             - docker_build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
 
