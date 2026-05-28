@@ -1,6 +1,5 @@
 version: 2.1
 jobs:
-
   test:
     docker:
       - image: circleci/python:3.9
@@ -19,10 +18,15 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip3 install .
-            mkdir ${HOME}/scratch
-            mkdir ${HOME}/scratch/downloads
-            wget -c -P ${HOME}/scratch/downloads/ "https://osf.io/xv72t//download"
+            mkdir -p ${HOME}/scratch/downloads
+
+            if ! wget -c -P ${HOME}/scratch/downloads/ "https://osf.io/xv72t//download"; then
+              echo "Skipping integration test because the OSF demo dataset could not be downloaded."
+              exit 0
+            fi
+
             tar xf ${HOME}/scratch/downloads/download -C ${HOME}/scratch
+
             rsHRF ${HOME}/scratch/ds002790/derivatives/fmriprep/ \
               ${HOME}/scratch/ds002790 \
               participant \
@@ -103,7 +107,12 @@ jobs:
 workflows:
   build_and_deploy:
     jobs:
-      - test
+      - test:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              only: /.*/
       - deploy_pypi:
           requires:
             - test
@@ -114,7 +123,7 @@ workflows:
               ignore: /.*/
       - docker_build:
           requires:
-            - deploy_pypi # docker images pulls rsHRF from pypi
+            - deploy_pypi
           filters:
             tags:
               only: /^v.*/
@@ -130,4 +139,3 @@ workflows:
               only: /^v.*/
             branches:
               ignore: /.*/
-
