@@ -209,6 +209,7 @@ def get_parser():
         "--TD",
         action="store",
         dest="TD_DD",
+        choices=[0, 1, 2],
         type=int,
         default=default_parameters["TD_DD"],
         help=(
@@ -322,6 +323,9 @@ def run_rsHRF():
         arg_groups[group.title] = group_dict
     para = arg_groups["Parameters"]
     temporal_mask = []
+
+    if para["thr"] <= 0:
+        parser.error("--thr must be greater than 0")
 
     if args.bids_dir == "GUI" and args.no_bids:
         try:
