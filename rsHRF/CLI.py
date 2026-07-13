@@ -27,7 +27,7 @@ def get_parser():
         epilog=(
             "Examples:\n"
             "  BIDS derivative input:\n"
-            "    rsHRF /path/to/fmriprep /path/to/output participant "
+            "    rsHRF /path/to/dataset/derivatives/fmriprep /path/to/output participant "
             "--participant-label 0001 -m BIDS --estimation canon2dd\n\n"
             "  Non-BIDS NIfTI/GIfTI input:\n"
             "    rsHRF /path/to/bold.nii.gz /path/to/output --no-bids "
@@ -200,7 +200,7 @@ def get_parser():
         type=int,
         default=default_parameters["T0"],
         help=(
-            f"Reference microtime bin for onset estimation. "
+            f"Reference microtime bin for onset estimation in units of T. "
             f"Default: {default_parameters['T0']}"
         ),
     )
@@ -425,14 +425,14 @@ def run_rsHRF():
         if input_type != "BIDS":
             if para["TR"] <= 0:
                 if input_type == "text":
-                    parser.error("Please supply a valid TR using -TR argument")
+                    parser.error("Please supply a valid TR using --TR argument")
                 else:  # it's 4D image
                     if ".nii" in args.bids_dir:
                         TR = (spm_dep.spm.spm_vol(args.bids_dir).header.get_zooms())[-1]
                     else:
-                        parser.error("Please supply a valid TR using -TR argument")
+                        parser.error("Please supply a valid TR using --TR argument")
                     if TR <= 0:
-                        parser.error("Please supply a valid TR using -TR argument")
+                        parser.error("Please supply a valid TR using --TR argument")
                     else:
                         print(
                             "Invalid or no TR supplied, using implicit TR: {0}".format(
