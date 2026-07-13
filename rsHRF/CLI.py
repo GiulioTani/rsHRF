@@ -444,6 +444,12 @@ def run_rsHRF():
                 dtype="int",
             )
 
+            if "localK" not in para or para["localK"] == None:
+                if para["TR"] <= 2:
+                    para["localK"] = 1
+                else:
+                    para["localK"] = 2
+
             if input_type == "text":
                 file_type = op.splitext(args.bids_dir)[-1]
                 try:
@@ -662,6 +668,13 @@ def run_rsHRF():
                     np.trunc(para["max_onset_search"] / para["dt"]) + 1,
                     dtype="int",
                 )
+
+                if "localK" not in para or para["localK"] == None:
+                    if para["TR"] <= 2:
+                        para["localK"] = 1
+                    else:
+                        para["localK"] = 2
+
                 num_errors += 1
                 try:
                     fourD_rsHRF.demo_rsHRF(

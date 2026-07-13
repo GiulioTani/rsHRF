@@ -34,12 +34,6 @@ def demo_rsHRF(
     wiener=False,
     temporal_mask=[],
 ):
-    # book-keeping w.r.t parameter values
-    if "localK" not in para or para["localK"] == None:
-        if para["TR"] <= 2:
-            para["localK"] = 1
-        else:
-            para["localK"] = 2
     # creating the output-directory if not already present
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
